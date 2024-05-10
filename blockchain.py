@@ -72,11 +72,18 @@ class Blockchain:
         self.current_transactions = []  # Clear the current transactions after creating a new block
         return block
 
-    def add_transaction(self, transaction):
+    def add_transaction(self, sender, recipient, amount):
         """
         Adds a new transaction to the list of transactions.
-        :param transaction: The transaction to add.
+        :param sender: The sender of the transaction.
+        :param recipient: The recipient of the transaction.
+        :param amount: The amount of the transaction.
         """
+        transaction = {
+            'sender': sender,
+            'recipient': recipient,
+            'amount': amount
+        }
         self.current_transactions.append(transaction)
 
     def proof_of_work(self, last_proof):
@@ -111,6 +118,10 @@ class Blockchain:
         for i in range(1, len(self.chain)):
             previous_block = self.chain[i - 1]
             current_block = self.chain[i]
+            # Print statements for debugging
+            print(f"Previous block's hash: {previous_block.hash}")
+            print(f"Current block's hash: {current_block.hash}")
+            print(f"Computed hash for current block: {current_block.compute_hash()}")
             if current_block.hash != current_block.compute_hash():
                 return False
             if current_block.previous_hash != previous_block.hash:

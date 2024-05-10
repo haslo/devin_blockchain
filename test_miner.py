@@ -28,7 +28,7 @@ def test_mine_block():
     # Assert the newly mined block is the last block in the blockchain
     assert block == blockchain.last_block
     # Assert the previous_hash of the newly mined block matches the hash of the previously last block
-    assert block.previous_hash == previous_last_block.hash
+    assert block.previous_hash == previous_last_block.hash, f"Expected previous_hash to be {previous_last_block.hash}, but got {block.previous_hash}"
     assert block.transactions[-1]['recipient'] == recipient_address
     assert block.transactions[-1]['amount'] == 1  # Mining reward
     assert block.proof is not None

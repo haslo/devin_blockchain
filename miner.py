@@ -39,11 +39,9 @@ class Miner:
 
         # Reward for finding the proof
         self.blockchain.add_transaction(
-            {
-                'sender': "0",  # indicates that this node has mined a new block
-                'recipient': recipient_address,
-                'amount': 1,  # mining reward is 1 HDC
-            }
+            sender="0",  # indicates that this node has mined a new block
+            recipient=recipient_address,
+            amount=1  # mining reward is 1 HDC
         )
 
         # Forge the new Block by adding it to the chain

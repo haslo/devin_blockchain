@@ -3,30 +3,33 @@ import os
 import base64
 import datetime
 import hashlib
+import binascii  # Import binascii for handling base64 decoding errors
 
 class Persister:
     """
     The Persister class handles saving and loading blockchain data to and from .devinchain files in JSON format.
     """
 
+    class InvalidJSONError(Exception):
+        """Exception raised for errors in the JSON decoding process."""
+        pass
+
+    class InvalidBase64Error(Exception):
+        """Exception raised for errors in the base64 decoding process."""
+        pass
+
     class BlockEncoder(json.JSONEncoder):
         def default(self, o):
             if isinstance(o, Block):
-                # Convert datetime to Unix timestamp
-                if isinstance(o.timestamp, datetime.datetime):
-                    o.timestamp = o.timestamp.timestamp()
-                # Encode the block's attributes as a dictionary
+                # Create a copy of the block's data for serialization
                 block_dict = {
                     'index': o.index,
-                    'timestamp': o.timestamp,
-                    'transactions': o.transactions,
+                    'timestamp': o.timestamp.timestamp() if isinstance(o.timestamp, datetime.datetime) else o.timestamp,
+                    'transactions': [txn if isinstance(txn, dict) else txn.__dict__ for txn in o.transactions],
                     'previous_hash': o.previous_hash,
-                    'proof': o.proof,  # Include the proof attribute
+                    'proof': o.proof,
                     'hash': o.hash
                 }
-                # Encode binary data as base64
-                if isinstance(o.data, bytes):
-                    block_dict['data'] = base64.b64encode(o.data).decode('utf-8')
                 return block_dict
             # Let the base class default method raise the TypeError
             return json.JSONEncoder.default(self, o)
@@ -50,22 +53,32 @@ class Persister:
         """
         if os.path.exists(filename):
             with open(filename, 'r') as file:
-                chain_data = json.load(file)
+                try:
+                    chain_data = json.load(file)
+                except json.JSONDecodeError:
+                    raise Persister.InvalidJSONError("File is not valid JSON.")
+
                 blockchain = Blockchain()
                 blockchain.chain = []
 
                 for block_data in chain_data:
+                    try:
+                        transactions = [base64.b64decode(txn).decode('utf-8') if isinstance(txn, str) else txn for txn in block_data['transactions']]
+                    except (binascii.Error, TypeError):
+                        raise Persister.InvalidBase64Error("Transactions data is not valid base64.")
+
                     block = Block(
                         block_data['index'],
-                        [base64.b64decode(txn) if isinstance(txn, str) and txn.endswith('=') else txn for txn in block_data['transactions']],
+                        transactions,
                         block_data['previous_hash'],
                         datetime.datetime.fromtimestamp(block_data['timestamp']),
-                        block_data['proof']  # Correctly deserialize the proof attribute
+                        block_data['proof']
                     )
                     blockchain.chain.append(block)
 
                 return blockchain
-        return None
+        else:
+            raise FileNotFoundError(f"The file {filename} does not exist.")
 
 class Block:
     """
