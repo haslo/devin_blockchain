@@ -1,7 +1,12 @@
 import hashlib
 import json
 import time
+import logging
 from block import Block
+
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class Blockchain:
@@ -36,9 +41,9 @@ class Blockchain:
         self.chain.append(block)
         self.current_transactions = []  # Clear the current transactions after creating a new block
         # Logging for debugging
-        print(f"Block created: {block}")
-        print(f"Block hash: {block.hash}")
-        print(f"Block's computed hash: {block.compute_hash()}")
+        logging.info(f"Block created: {block}")
+        logging.info(f"Block hash: {block.hash}")
+        logging.info(f"Block's computed hash: {block.compute_hash()}")
         return block
 
     def add_transaction(self, sender, recipient, amount):
@@ -90,13 +95,13 @@ class Blockchain:
             # Check if the current block's hash is correct
             current_computed_hash = current_block.compute_hash()
             if current_block.hash != current_computed_hash:
-                print(f"Invalid block at index {i}: Stored hash {current_block.hash} does not match computed hash {current_computed_hash}.")
+                logging.error(f"Invalid block at index {i}: Stored hash {current_block.hash} does not match computed hash {current_computed_hash}.")
                 return False
             # Check if the current block's previous hash is correct
             if current_block.previous_hash != previous_block.hash:
-                print(f"Invalid link from block at index {i} to index {i-1}: Previous hash {current_block.previous_hash} does not match previous block's hash {previous_block.hash}.")
+                logging.error(f"Invalid link from block at index {i} to index {i-1}: Previous hash {current_block.previous_hash} does not match previous block's hash {previous_block.hash}.")
                 return False
-        print("All blocks are valid and correctly linked.")
+        logging.info("All blocks are valid and correctly linked.")
         return True
 
     @property
