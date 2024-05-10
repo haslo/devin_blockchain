@@ -1,5 +1,6 @@
 import hashlib
-import datetime
+import json
+import time
 
 class Block:
     """
@@ -14,7 +15,7 @@ class Block:
         :param proof: The proof of work for this block.
         """
         self.index = index
-        self.timestamp = datetime.datetime.now()
+        self.timestamp = int(time.time())
         self.transactions = transactions
         self.previous_hash = previous_hash
         self.proof = proof
@@ -24,7 +25,7 @@ class Block:
         """
         A function that return the hash of the block contents.
         """
-        block_string = f"{self.index}{self.timestamp}{self.transactions}{self.previous_hash}{self.proof}"
+        block_string = json.dumps(self.__dict__, sort_keys=True)
         return hashlib.sha256(block_string.encode()).hexdigest()
 
     def __repr__(self):
