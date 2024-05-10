@@ -122,25 +122,4 @@ class Blockchain:
                 f"chain={self.chain}, "
                 f"current_transactions={self.current_transactions})")
 
-# Test the blockchain implementation
-if __name__ == '__main__':
-    # Create a blockchain
-    blockchain = Blockchain()
-
-    # Add a transaction
-    blockchain.add_transaction("Alice pays Bob 5 HDC")
-
-    # Mine a block
-    last_block = blockchain.chain[-1]
-    last_proof = last_block.hash
-    proof = blockchain.proof_of_work(last_proof)
-
-    # Reward for finding the proof (For simplicity, the sender is "0" to signify that this node has mined a new coin)
-    blockchain.add_transaction("0 pays Devin 1 HDC")
-
-    # Forge the new Block by adding it to the chain
-    previous_hash = last_block.hash
-    block = blockchain.create_block(blockchain.current_transactions, previous_hash, proof)
-
-    print(f"Block has been added to the blockchain: {block}")
-    print(f"The blockchain now contains {len(blockchain.chain)} blocks")
+# End of the Blockchain class
