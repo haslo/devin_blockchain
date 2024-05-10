@@ -18,6 +18,21 @@ def test_add_transaction():
     assert len(blockchain.current_transactions) == 1
     assert blockchain.current_transactions[0] == {"sender": "Alice", "recipient": "Bob", "amount": 5}
 
+def test_add_transaction_invalid_sender():
+    blockchain = Blockchain()
+    with pytest.raises(ValueError):
+        blockchain.add_transaction(sender="", recipient="Bob", amount=5)
+
+def test_add_transaction_invalid_recipient():
+    blockchain = Blockchain()
+    with pytest.raises(ValueError):
+        blockchain.add_transaction(sender="Alice", recipient="", amount=5)
+
+def test_add_transaction_invalid_amount():
+    blockchain = Blockchain()
+    with pytest.raises(ValueError):
+        blockchain.add_transaction(sender="Alice", recipient="Bob", amount=-5)
+
 def test_proof_of_work():
     blockchain = Blockchain()
     last_block = blockchain.chain[-1]

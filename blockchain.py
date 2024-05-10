@@ -48,11 +48,17 @@ class Blockchain:
 
     def add_transaction(self, sender, recipient, amount):
         """
-        Adds a new transaction to the list of transactions.
+        Adds a new transaction to the list of transactions after validating it.
         :param sender: The sender of the transaction.
         :param recipient: The recipient of the transaction.
         :param amount: The amount of the transaction.
+        :raise ValueError: If sender or recipient is empty, or amount is not positive.
         """
+        if not sender or not recipient:
+            raise ValueError("Sender and recipient must be specified.")
+        if amount <= 0:
+            raise ValueError("Transaction amount must be positive.")
+
         transaction = {
             'sender': sender,
             'recipient': recipient,
