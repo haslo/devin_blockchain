@@ -5,24 +5,26 @@ class Block:
     """
     A Block represents each 'item' in the blockchain.
     """
-    def __init__(self, index, transactions, previous_hash):
+    def __init__(self, index, transactions, previous_hash, proof):
         """
         Constructor for the `Block` class.
         :param index: Unique ID of the block.
         :param transactions: List of transactions.
         :param previous_hash: Hash of the previous block in the chain.
+        :param proof: The proof of work for this block.
         """
         self.index = index
         self.timestamp = datetime.datetime.now()
         self.transactions = transactions
         self.previous_hash = previous_hash
+        self.proof = proof
         self.hash = self.compute_hash()
 
     def compute_hash(self):
         """
         A function that return the hash of the block contents.
         """
-        block_string = f"{self.index}{self.timestamp}{self.transactions}{self.previous_hash}"
+        block_string = f"{self.index}{self.timestamp}{self.transactions}{self.previous_hash}{self.proof}"
         return hashlib.sha256(block_string.encode()).hexdigest()
 
     def __repr__(self):
@@ -53,18 +55,20 @@ class Blockchain:
         A function to generate genesis block and appends it to the chain.
         The block has index 0, an empty transaction list, and a previous hash of "0".
         """
-        genesis_block = Block(0, [], "0")
+        genesis_block = Block(0, [], "0", 0)
         self.chain.append(genesis_block)
 
-    def create_block(self, transactions, previous_hash):
+    def create_block(self, transactions, previous_hash, proof):
         """
         A function that adds a block to the blockchain.
         :param transactions: The list of transactions.
         :param previous_hash: The hash of the previous block.
+        :param proof: The proof of work for this block.
         :return: The new block.
         """
-        block = Block(len(self.chain), transactions, previous_hash)
+        block = Block(len(self.chain), transactions, previous_hash, proof)
         self.chain.append(block)
+        self.current_transactions = []  # Clear the current transactions after creating a new block
         return block
 
     def add_transaction(self, transaction):
@@ -112,6 +116,13 @@ class Blockchain:
                 return False
         return True
 
+    @property
+    def last_block(self):
+        """
+        Returns the last block in the current blockchain.
+        """
+        return self.chain[-1] if self.chain else None
+
     def __repr__(self):
         """
         A function to print out the blockchain contents in a readable format.
@@ -138,7 +149,7 @@ if __name__ == '__main__':
 
     # Forge the new Block by adding it to the chain
     previous_hash = last_block.hash
-    block = blockchain.create_block(blockchain.current_transactions, previous_hash)
+    block = blockchain.create_block(blockchain.current_transactions, previous_hash, proof)
 
     print(f"Block has been added to the blockchain: {block}")
     print(f"The blockchain now contains {len(blockchain.chain)} blocks")

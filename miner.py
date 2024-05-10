@@ -34,18 +34,23 @@ class Miner:
         - Forge the new Block by adding it to the chain
         """
         last_block = self.blockchain.last_block
-        last_proof = last_block['proof']
+        last_proof = last_block.proof
         proof = self.proof_of_work(last_proof)
 
         # Reward for finding the proof
-        self.blockchain.new_transaction(
-            sender="0",  # indicates that this node has mined a new block
-            recipient=recipient_address,
-            amount=1,  # mining reward is 1 HDC
+        self.blockchain.add_transaction(
+            {
+                'sender': "0",  # indicates that this node has mined a new block
+                'recipient': recipient_address,
+                'amount': 1,  # mining reward is 1 HDC
+            }
         )
 
         # Forge the new Block by adding it to the chain
-        previous_hash = self.blockchain.hash(last_block)
-        block = self.blockchain.new_block(proof, previous_hash)
+        previous_hash = last_block.compute_hash()
+        block = self.blockchain.create_block(self.blockchain.current_transactions, previous_hash, proof)
+
+        # Print the hash of the last block after mining for debugging
+        print(f"Hash of the last block after mining: {self.blockchain.last_block.hash}")
 
         return block
