@@ -34,7 +34,15 @@ def test_valid_chain():
     blockchain.add_transaction(sender="0", recipient="Devin", amount=1)
     previous_hash = last_block.hash
     blockchain.create_block(blockchain.current_transactions, previous_hash, proof)  # Added the proof argument
+
+    # Debugging: Print the state of the blockchain before and after adding the new block
+    print("Blockchain before adding new block:", blockchain.chain)
+    print("Last block in the blockchain:", blockchain.last_block)
+
     assert blockchain.valid_chain() is True
+
+    # Debugging: Print the state of the blockchain after validation
+    print("Blockchain after validation:", blockchain.chain)
 
 def test_chain_with_invalid_block():
     blockchain = Blockchain()

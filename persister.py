@@ -4,6 +4,7 @@ import base64
 import datetime
 import hashlib
 import binascii  # Import binascii for handling base64 decoding errors
+from block import Block
 
 class Persister:
     """
@@ -23,15 +24,14 @@ class Persister:
             if isinstance(o, Block):
                 # Create a copy of the block's data for serialization
                 block_dict = {
-                    'index': o.index,
-                    'timestamp': o.timestamp.timestamp() if isinstance(o.timestamp, datetime.datetime) else o.timestamp,
-                    'transactions': [txn if isinstance(txn, dict) else txn.__dict__ for txn in o.transactions],
+                    'index': o.index,  # Include the index attribute
+                    'timestamp': o.timestamp if isinstance(o.timestamp, int) else int(o.timestamp.timestamp()),
+                    'transactions': [txn if isinstance(txn, dict) or isinstance(txn, str) else txn.__dict__ for txn in o.transactions],
                     'previous_hash': o.previous_hash,
                     'proof': o.proof,
                     'hash': o.hash
                 }
                 return block_dict
-            # Let the base class default method raise the TypeError
             return json.JSONEncoder.default(self, o)
 
     @staticmethod
@@ -63,16 +63,19 @@ class Persister:
 
                 for block_data in chain_data:
                     try:
-                        transactions = [base64.b64decode(txn).decode('utf-8') if isinstance(txn, str) else txn for txn in block_data['transactions']]
-                    except (binascii.Error, TypeError):
+                        transactions = [
+                            base64.b64decode(txn).decode('utf-8') if isinstance(txn, str) else txn
+                            for txn in block_data['transactions']
+                        ]
+                    except binascii.Error:
                         raise Persister.InvalidBase64Error("Transactions data is not valid base64.")
 
                     block = Block(
                         block_data['index'],
                         transactions,
                         block_data['previous_hash'],
-                        datetime.datetime.fromtimestamp(block_data['timestamp']),
-                        block_data['proof']
+                        block_data['proof'],
+                        block_data['timestamp']  # Pass the timestamp to the Block constructor
                     )
                     blockchain.chain.append(block)
 
@@ -80,43 +83,6 @@ class Persister:
         else:
             raise FileNotFoundError(f"The file {filename} does not exist.")
 
-class Block:
-    """
-    A Block represents each 'item' in the blockchain.
-    """
-    def __init__(self, index, transactions, previous_hash, proof):
-        """
-        Constructor for the `Block` class.
-        :param index: Unique ID of the block.
-        :param transactions: List of transactions.
-        :param previous_hash: Hash of the previous block in the chain.
-        :param proof: The proof of work for this block.
-        """
-        self.index = index
-        self.timestamp = datetime.datetime.now()
-        self.transactions = transactions
-        self.previous_hash = previous_hash
-        self.proof = proof
-        self.hash = self.compute_hash()
-
-    def compute_hash(self):
-        """
-        A function that return the hash of the block contents.
-        """
-        block_string = f"{self.index}{self.timestamp}{self.transactions}{self.previous_hash}{self.proof}"
-        return hashlib.sha256(block_string.encode()).hexdigest()
-
-    def __repr__(self):
-        """
-        A function to print out the block contents in a readable format.
-        """
-        return (f"Block("
-                f"index={self.index}, "
-                f"timestamp={self.timestamp}, "
-                f"transactions={self.transactions}, "
-                f"previous_hash={self.previous_hash}, "
-                f"proof={self.proof}, "
-                f"hash={self.hash})")
 
 class Blockchain:
     """

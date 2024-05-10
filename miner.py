@@ -44,11 +44,11 @@ class Miner:
             amount=1  # mining reward is 1 HDC
         )
 
-        # Forge the new Block by adding it to the chain
-        previous_hash = last_block.compute_hash()
-        block = self.blockchain.create_block(self.blockchain.current_transactions, previous_hash, proof)
+        # The previous hash must be computed after any new transactions are added
+        # but before the new block is created to ensure it reflects the state of the blockchain
+        # just before the new block is added.
+        previous_hash = self.blockchain.last_block.hash
 
-        # Print the hash of the last block after mining for debugging
-        print(f"Hash of the last block after mining: {self.blockchain.last_block.hash}")
+        block = self.blockchain.create_block(self.blockchain.current_transactions, previous_hash, proof)
 
         return block

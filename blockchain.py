@@ -1,43 +1,8 @@
 import hashlib
 import json
 import time
+from block import Block
 
-class Block:
-    """
-    A Block represents each 'item' in the blockchain.
-    """
-    def __init__(self, index, transactions, previous_hash, proof):
-        """
-        Constructor for the `Block` class.
-        :param index: Unique ID of the block.
-        :param transactions: List of transactions.
-        :param previous_hash: Hash of the previous block in the chain.
-        :param proof: The proof of work for this block.
-        """
-        self.index = index
-        self.timestamp = int(time.time())
-        self.transactions = transactions
-        self.previous_hash = previous_hash
-        self.proof = proof
-        self.hash = self.compute_hash()
-
-    def compute_hash(self):
-        """
-        A function that return the hash of the block contents.
-        """
-        block_string = json.dumps(self.__dict__, sort_keys=True)
-        return hashlib.sha256(block_string.encode()).hexdigest()
-
-    def __repr__(self):
-        """
-        A function to print out the block contents in a readable format.
-        """
-        return (f"Block("
-                f"index={self.index}, "
-                f"timestamp={self.timestamp}, "
-                f"transactions={self.transactions}, "
-                f"previous_hash={self.previous_hash}, "
-                f"hash={self.hash})")
 
 class Blockchain:
     """
@@ -70,6 +35,10 @@ class Blockchain:
         block = Block(len(self.chain), transactions, previous_hash, proof)
         self.chain.append(block)
         self.current_transactions = []  # Clear the current transactions after creating a new block
+        # Logging for debugging
+        print(f"Block created: {block}")
+        print(f"Block hash: {block.hash}")
+        print(f"Block's computed hash: {block.compute_hash()}")
         return block
 
     def add_transaction(self, sender, recipient, amount):
@@ -118,14 +87,16 @@ class Blockchain:
         for i in range(1, len(self.chain)):
             previous_block = self.chain[i - 1]
             current_block = self.chain[i]
-            # Print statements for debugging
-            print(f"Previous block's hash: {previous_block.hash}")
-            print(f"Current block's hash: {current_block.hash}")
-            print(f"Computed hash for current block: {current_block.compute_hash()}")
-            if current_block.hash != current_block.compute_hash():
+            # Check if the current block's hash is correct
+            current_computed_hash = current_block.compute_hash()
+            if current_block.hash != current_computed_hash:
+                print(f"Invalid block at index {i}: Stored hash {current_block.hash} does not match computed hash {current_computed_hash}.")
                 return False
+            # Check if the current block's previous hash is correct
             if current_block.previous_hash != previous_block.hash:
+                print(f"Invalid link from block at index {i} to index {i-1}: Previous hash {current_block.previous_hash} does not match previous block's hash {previous_block.hash}.")
                 return False
+        print("All blocks are valid and correctly linked.")
         return True
 
     @property
@@ -134,6 +105,14 @@ class Blockchain:
         Returns the last block in the current blockchain.
         """
         return self.chain[-1] if self.chain else None
+
+    def __eq__(self, other):
+        """
+        Overloads the equality operator to compare two Blockchain instances.
+        :param other: The other Blockchain instance to compare with.
+        :return: True if both instances have the same chain and current transactions, False otherwise.
+        """
+        return self.chain == other.chain and self.current_transactions == other.current_transactions
 
     def __repr__(self):
         """
