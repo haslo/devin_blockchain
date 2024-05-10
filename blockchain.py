@@ -126,7 +126,7 @@ if __name__ == '__main__':
     blockchain = Blockchain()
 
     # Add a transaction
-    blockchain.add_transaction("Alice pays Bob 5 BTC")
+    blockchain.add_transaction("Alice pays Bob 5 HDC")
 
     # Mine a block
     last_block = blockchain.chain[-1]
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     proof = blockchain.proof_of_work(last_proof)
 
     # Reward for finding the proof (For simplicity, the sender is "0" to signify that this node has mined a new coin)
-    blockchain.add_transaction("0 pays Devin 1 BTC")
+    blockchain.add_transaction("0 pays Devin 1 HDC")
 
     # Forge the new Block by adding it to the chain
     previous_hash = last_block.hash
