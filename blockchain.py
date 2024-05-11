@@ -30,20 +30,22 @@ class Blockchain:
         genesis_block = Block(0, [], "0", 0)
         self.chain.append(genesis_block)
 
-    def create_block(self, transactions, previous_hash, proof):
+    def create_block(self, transactions, previous_hash, proof, adjust_diff=False):
         """
         A function that adds a block to the blockchain.
         :param transactions: The list of transactions.
         :param previous_hash: The hash of the previous block.
         :param proof: The proof of work for this block.
+        :param adjust_diff: A boolean indicating whether to adjust the difficulty after creating the block.
         :return: The new block.
         """
         block = Block(len(self.chain), transactions, previous_hash, proof)
         self.chain.append(block)
         self.current_transactions = []  # Clear the current transactions after creating a new block
 
-        # Adjust the difficulty for the next block based on the average mining time
-        self.adjust_difficulty()
+        if adjust_diff:
+            # Adjust the difficulty for the next block based on the average mining time
+            self.adjust_difficulty()
 
         # Logging for debugging
         logging.info(f"Block created: {block}")
@@ -81,6 +83,9 @@ class Blockchain:
         proof = 0
         while not self.valid_proof(last_proof, proof, self.difficulty):
             proof += 1
+            # Log each attempt at finding a valid proof
+            logging.debug(f"Attempting proof: {proof}, Difficulty: {self.difficulty}")
+        logging.info(f"Proof found: {proof}, Difficulty: {self.difficulty}")
         return proof
 
     @staticmethod
@@ -94,14 +99,16 @@ class Blockchain:
         """
         guess = f'{last_proof}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
-        return guess_hash[:difficulty] == "0" * difficulty
+        valid = guess_hash[:difficulty] == "0" * difficulty
+        logging.info(f"Validating proof: {proof}, Guess: {guess.decode()}, Guess hash: {guess_hash}, Required leading zeroes: {'0' * difficulty}, Valid: {valid}")
+        return valid
 
     def adjust_difficulty(self, target_block_time=10):
         """
         Adjusts the difficulty of the proof of work algorithm dynamically to maintain a consistent block creation rate.
         :param target_block_time: The desired time (in seconds) between blocks.
         """
-        if len(self.chain) < 10:
+        if len(self.chain) <= 10:
             # Not enough blocks to calculate the average mining time, keep the current difficulty
             return
 
@@ -126,6 +133,7 @@ class Blockchain:
         for i in range(1, len(self.chain)):
             previous_block = self.chain[i - 1]
             current_block = self.chain[i]
+            logging.debug(f"Validating block at index {i} with hash {current_block.hash}")
             # Check if the current block's hash is correct
             current_computed_hash = current_block.compute_hash()
             if current_block.hash != current_computed_hash:
