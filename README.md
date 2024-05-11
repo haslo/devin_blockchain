@@ -55,6 +55,10 @@ The blockchain can be saved to and loaded from `.json` files, allowing for persi
 
 The blockchain includes a proof-of-work algorithm for mining new blocks. To mine a new block, use the `mine` method from the `Miner` class. Rewards for mining are added as transactions in the mined block, rewarding the miner with 1 HDC (haslo devin coin).
 
+## Node Communication Protocol
+
+For details on the node communication protocol used in the Devin Blockchain, see the [protocol.md](protocol.md) file.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
