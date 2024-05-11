@@ -1,5 +1,5 @@
-from blockchain import Blockchain
-from miner import Miner
+from blockchain.blockchain import Blockchain
+from mining.miner import Miner
 
 
 def test_proof_of_work():

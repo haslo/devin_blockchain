@@ -1,6 +1,6 @@
 import logging
 import os
-from singleton import Singleton
+from util.singleton import Singleton
 
 
 class Logger(metaclass=Singleton):

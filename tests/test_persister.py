@@ -1,8 +1,7 @@
 import pytest
 import os
-import json
-from blockchain import Blockchain
-from persister import Persister
+from blockchain.blockchain import Blockchain
+from util.persister import Persister
 
 
 def test_save_blockchain():
@@ -99,7 +98,7 @@ def test_save_and_load_blockchain():
 def test_load_blockchain_from_fixture():
     # Load the blockchain from the pre-saved fixture file
     persister = Persister()
-    fixture_filename = 'fixtures/test_blockchain.json'
+    fixture_filename = 'tests/fixtures/test_blockchain.json'
     loaded_blockchain = persister.load(fixture_filename)
 
     # Manually create a blockchain instance that matches the expected data from the fixture

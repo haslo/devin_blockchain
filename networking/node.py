@@ -1,7 +1,7 @@
 import socket
 import threading
 import json
-from blockchain import Blockchain
+from blockchain.blockchain import Blockchain
 
 
 class Node:

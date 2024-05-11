@@ -1,7 +1,7 @@
 import json
 import os
 import hashlib
-from block import Block
+from blockchain.block import Block
 
 
 class Persister:

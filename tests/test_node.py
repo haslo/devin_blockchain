@@ -1,8 +1,7 @@
 import pytest
 import json
-import socket
 from unittest.mock import patch, MagicMock
-from node import Node
+from networking.node import Node
 
 
 @pytest.fixture

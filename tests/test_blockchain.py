@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import patch, PropertyMock
-from blockchain import Block, Blockchain
+from blockchain.block import Block
+from blockchain.blockchain import Blockchain
 
 
 @pytest.fixture(autouse=True)

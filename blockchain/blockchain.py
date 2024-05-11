@@ -1,7 +1,7 @@
 import hashlib
 import random
-from block import Block
-from logger import Logger
+from blockchain.block import Block
+from util.logger import Logger
 
 
 class Blockchain:
@@ -99,8 +99,6 @@ class Blockchain:
             'amount': amount
         }
         self.current_transactions.append(transaction)
-
-    import random
 
     def proof_of_work(self, last_block):
         """
