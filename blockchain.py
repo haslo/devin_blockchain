@@ -20,7 +20,16 @@ class Blockchain:
         self.chain = []
         self.current_transactions = []
         self.difficulty = 4  # Default difficulty level of 4 leading zeroes
+        self.test_mode = False  # Test mode is off by default
         self.create_genesis_block()
+
+    def toggle_test_mode(self, mode: bool):
+        """
+        Toggle the test mode for the blockchain.
+        :param mode: A boolean indicating whether to enable or disable test mode.
+        """
+        self.test_mode = mode
+        self.difficulty = 2 if mode else 4  # Lower difficulty for testing
 
     def create_genesis_block(self):
         """
@@ -82,11 +91,12 @@ class Blockchain:
         """
         last_proof = last_block.proof
         proof = 0
-        while not self.valid_proof(last_proof, proof, self.difficulty):
+        current_difficulty = self.difficulty if not self.test_mode else 2  # Use a lower difficulty if in test mode
+        while not self.valid_proof(last_proof, proof, current_difficulty):
             proof += 1
             # Log each attempt at finding a valid proof with the current difficulty level
-            logging.debug(f"Attempting proof: {proof}, Current difficulty: {self.difficulty}")
-        logging.info(f"Proof found: {proof}, Difficulty: {self.difficulty}")
+            logging.debug(f"Attempting proof: {proof}, Current difficulty: {current_difficulty}")
+        logging.info(f"Proof found: {proof}, Difficulty: {current_difficulty}")
         return proof
 
     @staticmethod
