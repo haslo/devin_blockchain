@@ -100,8 +100,8 @@ def test_load_blockchain_from_fixture():
     expected_blockchain = Blockchain()
     expected_blockchain.create_genesis_block()  # Ensure the genesis block is created
     expected_blockchain.add_transaction(sender="a", recipient="b", amount=1)
-    # Use the hash of the genesis block for the previous_hash of the second block
-    expected_blockchain.create_block(transactions=expected_blockchain.current_transactions, previous_hash=expected_blockchain.last_block.hash, proof=100)
+    # Use the correct hash of the genesis block for the previous_hash of the second block
+    expected_blockchain.create_block(transactions=expected_blockchain.current_transactions, previous_hash="feb534fe03366345fe7b6ed8e5367ac9a4e219ead99b690d9f73cbff1687d904", proof=100)
 
     # Compare the loaded blockchain to the expected blockchain
     # Ensure that the structure and content of the blocks are consistent
