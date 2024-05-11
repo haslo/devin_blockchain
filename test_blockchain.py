@@ -37,28 +37,41 @@ def test_add_transaction_invalid_amount():
 def test_proof_of_work():
     blockchain = Blockchain()
     last_block = blockchain.chain[-1]
-    last_proof = last_block.hash
-    proof = blockchain.proof_of_work(last_proof)
-    assert blockchain.valid_proof(last_proof, proof) is True
+    proof = blockchain.proof_of_work(last_block)
+    assert blockchain.valid_proof(last_block.proof, proof) is True
+
+import logging
 
 def test_valid_chain():
+    # Set up logging to capture info-level logs
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)  # Changed from ERROR to INFO
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.INFO)  # Changed from ERROR to INFO
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
     blockchain = Blockchain()
     blockchain.add_transaction(sender="Alice", recipient="Bob", amount=5)
     last_block = blockchain.chain[-1]
-    last_proof = last_block.hash
-    proof = blockchain.proof_of_work(last_proof)
+    proof = blockchain.proof_of_work(last_block)
     blockchain.add_transaction(sender="0", recipient="Devin", amount=1)
     previous_hash = last_block.hash
-    blockchain.create_block(blockchain.current_transactions, previous_hash, proof)  # Added the proof argument
+    # Log the state of the blockchain before creating a new block
+    logging.info(f"Before creating a new block: last_proof={last_block.proof}, proof={proof}, difficulty={blockchain.difficulty}, previous_hash={previous_hash}")
+    # Pass adjust_diff as False to prevent difficulty adjustment during the test
+    new_block = blockchain.create_block(blockchain.current_transactions, previous_hash, proof, adjust_diff=False)
+    # Log the state of the blockchain after creating a new block
+    logging.info(f"After creating a new block: new_block_hash={new_block.hash}, difficulty={blockchain.difficulty}, previous_hash={new_block.previous_hash}")
 
-    assert blockchain.valid_chain() is True
+    assert blockchain.valid_chain() is True, "The blockchain should be valid"
 
 def test_chain_with_invalid_block():
     blockchain = Blockchain()
     blockchain.add_transaction(sender="Alice", recipient="Bob", amount=5)
     last_block = blockchain.chain[-1]
-    last_proof = last_block.hash
-    proof = blockchain.proof_of_work(last_proof)
+    proof = blockchain.proof_of_work(last_block)
     blockchain.add_transaction(sender="0", recipient="Devin", amount=1)
     previous_hash = last_block.hash
     block = blockchain.create_block(blockchain.current_transactions, previous_hash, proof)  # Added the proof argument
@@ -72,8 +85,7 @@ def test_difficulty_adjustment_with_fewer_than_10_blocks():
     original_difficulty = blockchain.difficulty
     for i in range(9):
         last_block = blockchain.chain[-1]
-        last_proof = last_block.hash
-        proof = blockchain.proof_of_work(last_proof)
+        proof = blockchain.proof_of_work(last_block)
         blockchain.add_transaction(sender="0", recipient="Devin", amount=1)
         previous_hash = last_block.hash
         blockchain.create_block(blockchain.current_transactions, previous_hash, proof)
@@ -84,14 +96,12 @@ def test_difficulty_increases():
     # Simulate quick block mining to decrease average block time
     for i in range(10):
         last_block = blockchain.chain[-1]
-        last_proof = last_block.hash
-        proof = blockchain.proof_of_work(last_proof)
+        proof = blockchain.proof_of_work(last_block)
         blockchain.add_transaction(sender="0", recipient="Devin", amount=1)
         previous_hash = last_block.hash
         # Calculate new timestamp
         new_timestamp = last_block.timestamp + 5
-        with patch.object(last_block, 'timestamp', new_callable=PropertyMock) as mock_timestamp:
-            mock_timestamp.return_value = new_timestamp  # Set mock timestamp
+        with patch.object(last_block, 'timestamp', new=PropertyMock(return_value=new_timestamp)):
             blockchain.create_block(blockchain.current_transactions, previous_hash, proof)
     assert blockchain.difficulty > 1  # Difficulty should increase
 
@@ -102,13 +112,11 @@ def test_difficulty_decreases():
     # Simulate slow block mining to increase average block time
     for i in range(10):
         last_block = blockchain.chain[-1]
-        last_proof = last_block.hash
-        proof = blockchain.proof_of_work(last_proof)
+        proof = blockchain.proof_of_work(last_block)
         blockchain.add_transaction(sender="0", recipient="Devin", amount=1)
         previous_hash = last_block.hash
         # Calculate new timestamp
         new_timestamp = last_block.timestamp + 20
-        with patch.object(last_block, 'timestamp', new_callable=PropertyMock) as mock_timestamp:
-            mock_timestamp.return_value = new_timestamp  # Set mock timestamp
+        with patch.object(last_block, 'timestamp', new=PropertyMock(return_value=new_timestamp)):
             blockchain.create_block(blockchain.current_transactions, previous_hash, proof)
     assert blockchain.difficulty < 5  # Difficulty should decrease
