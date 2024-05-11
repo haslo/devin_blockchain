@@ -12,6 +12,7 @@ class Node:
         self.blockchain = Blockchain()
         self.mempool = []
         self.server_thread = None
+        self.server_running = False
 
         if bootstrap_node:
             self.connect_to_node(bootstrap_node)
@@ -65,6 +66,7 @@ class Node:
 
     def start_server(self):
         # Start the node server to listen for incoming connections
+        self.server_running = True
         self.server_thread = threading.Thread(target=self.run_server)
         self.server_thread.start()
 
@@ -76,7 +78,7 @@ class Node:
             print(f"Node server listening on port {self.port}")
 
             try:
-                while True:
+                while self.server_running:
                     client_socket, client_address = server_socket.accept()
                     print(f"Accepted connection from {client_address}")
                     client_handler = threading.Thread(
@@ -105,8 +107,8 @@ class Node:
     def stop_server(self):
         # Stop the node server
         if self.server_thread:
-            # This is a placeholder for the actual implementation
-            # We would need to set a flag to stop the server loop and join the thread
-            pass
+            self.server_running = False
+            self.server_thread.join()
+            print("Node server stopped.")
 
 # Implement additional methods as needed for p2p communication and node functionality
