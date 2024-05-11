@@ -1,9 +1,8 @@
 import pytest
 import os
-import base64
 import json
 from blockchain import Blockchain
-from persister import Persister, binascii
+from persister import Persister
 
 def test_save_blockchain():
     # Create a blockchain and add a block
@@ -61,23 +60,23 @@ def test_load_blockchain_invalid_json():
     # Clean up the file after test
     os.remove(filename)
 
-def test_load_blockchain_invalid_base64():
-    # Create a blockchain and add a block with invalid base64 in transactions
+# New test case for saving and loading a blockchain, then comparing the two
+def test_save_and_load_blockchain():
+    # Create a blockchain and add a block
     blockchain = Blockchain()
     blockchain.add_transaction(sender="a", recipient="b", amount=1)
     blockchain.create_block(transactions=blockchain.current_transactions, previous_hash='1', proof=100)
 
-    # Manually corrupt the transaction data to simulate invalid base64
-    blockchain.chain[1].transactions = ["not_base64"]
-
-    # Save the corrupted blockchain to a file
+    # Save the blockchain to a file
     persister = Persister()
-    filename = 'test_invalid_base64.devinchain'
-    with open(filename, 'w') as file:
-        json.dump(blockchain.chain, file, cls=Persister.BlockEncoder, indent=4, sort_keys=True)
+    filename = 'test_save_load.devinchain'
+    persister.save(blockchain, filename)
 
-    with pytest.raises(Persister.InvalidBase64Error):
-        persister.load(filename)
+    # Load the blockchain from the file
+    loaded_blockchain = persister.load(filename)
+
+    # Compare the blockchains to ensure they are the same
+    assert loaded_blockchain.chain == blockchain.chain
 
     # Clean up the file after test
     os.remove(filename)

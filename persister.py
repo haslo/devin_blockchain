@@ -1,9 +1,7 @@
 import json
 import os
-import base64
 import datetime
 import hashlib
-import binascii  # Import binascii for handling base64 decoding errors
 from block import Block
 
 class Persister:
@@ -15,18 +13,14 @@ class Persister:
         """Exception raised for errors in the JSON decoding process."""
         pass
 
-    class InvalidBase64Error(Exception):
-        """Exception raised for errors in the base64 decoding process."""
-        pass
-
     class BlockEncoder(json.JSONEncoder):
         def default(self, o):
             if isinstance(o, Block):
                 # Create a copy of the block's data for serialization
                 block_dict = {
-                    'index': o.index,  # Include the index attribute
-                    'timestamp': o.timestamp if isinstance(o.timestamp, int) else int(o.timestamp.timestamp()),
-                    'transactions': [txn if isinstance(txn, dict) or isinstance(txn, str) else txn.__dict__ for txn in o.transactions],
+                    'index': o.index,
+                    'timestamp': o.timestamp,
+                    'transactions': [txn.__dict__ for txn in o.transactions],
                     'previous_hash': o.previous_hash,
                     'proof': o.proof,
                     'hash': o.hash
@@ -62,20 +56,12 @@ class Persister:
                 blockchain.chain = []
 
                 for block_data in chain_data:
-                    try:
-                        transactions = [
-                            base64.b64decode(txn).decode('utf-8') if isinstance(txn, str) else txn
-                            for txn in block_data['transactions']
-                        ]
-                    except binascii.Error:
-                        raise Persister.InvalidBase64Error("Transactions data is not valid base64.")
-
                     block = Block(
                         block_data['index'],
-                        transactions,
+                        block_data['transactions'],
                         block_data['previous_hash'],
                         block_data['proof'],
-                        block_data['timestamp']  # Pass the timestamp to the Block constructor
+                        block_data['timestamp']
                     )
                     blockchain.chain.append(block)
 

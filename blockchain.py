@@ -4,9 +4,13 @@ import time
 import logging
 from block import Block
 
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Create a module-level logger object
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)  # Default logging level
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 class Blockchain:
@@ -57,9 +61,9 @@ class Blockchain:
             self.adjust_difficulty()
 
         # Logging for debugging
-        logging.info(f"Block created: {block}")
-        logging.info(f"Block hash: {block.hash}")
-        logging.info(f"Block's computed hash: {block.compute_hash()}")
+        logger.info(f"Block created: {block}")
+        logger.info(f"Block hash: {block.hash}")
+        logger.info(f"Block's computed hash: {block.compute_hash()}")
         return block
 
     def add_transaction(self, sender, recipient, amount):
@@ -95,8 +99,8 @@ class Blockchain:
         while not self.valid_proof(last_proof, proof, current_difficulty):
             proof += 1
             # Log each attempt at finding a valid proof with the current difficulty level
-            logging.debug(f"Attempting proof: {proof}, Current difficulty: {current_difficulty}")
-        logging.info(f"Proof found: {proof}, Difficulty: {current_difficulty}")
+            logger.debug(f"Attempting proof: {proof}, Current difficulty: {current_difficulty}")
+        logger.info(f"Proof found: {proof}, Difficulty: {current_difficulty}")
         return proof
 
     @staticmethod
@@ -111,7 +115,7 @@ class Blockchain:
         guess = f'{last_proof}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
         valid = guess_hash[:difficulty] == "0" * difficulty
-        logging.info(f"Validating proof: {proof}, Guess: {guess.decode()}, Guess hash: {guess_hash}, Required leading zeroes: {'0' * difficulty}, Valid: {valid}")
+        logger.info(f"Validating proof: {proof}, Guess: {guess.decode()}, Guess hash: {guess_hash}, Required leading zeroes: {'0' * difficulty}, Valid: {valid}")
         return valid
 
     def adjust_difficulty(self, target_block_time=10):
@@ -134,7 +138,7 @@ class Blockchain:
         elif average_block_time > target_block_time:
             self.difficulty = max(1, self.difficulty - 1)  # Ensure difficulty does not go below 1
 
-        logging.info(f"Difficulty adjusted to {self.difficulty}. Average block time: {average_block_time:.2f}s")
+        logger.info(f"Difficulty adjusted to {self.difficulty}. Average block time: {average_block_time:.2f}s")
 
     def valid_chain(self):
         """
@@ -144,22 +148,22 @@ class Blockchain:
         for i in range(1, len(self.chain)):
             previous_block = self.chain[i - 1]
             current_block = self.chain[i]
-            logging.debug(f"Validating block at index {i} with hash {current_block.hash}")
+            logger.debug(f"Validating block at index {i} with hash {current_block.hash}")
             # Check if the current block's hash is correct
             current_computed_hash = current_block.compute_hash()
-            logging.debug(f"Computed hash for block at index {i}: {current_computed_hash}, Difficulty used: {self.difficulty}")
+            logger.debug(f"Computed hash for block at index {i}: {current_computed_hash}, Difficulty used: {self.difficulty}")
             if current_block.hash != current_computed_hash:
-                logging.error(f"Invalid block at index {i}: Stored hash {current_block.hash} does not match computed hash {current_computed_hash}.")
+                logger.error(f"Invalid block at index {i}: Stored hash {current_block.hash} does not match computed hash {current_computed_hash}.")
                 return False
             # Check if the current block's previous hash is correct
             if current_block.previous_hash != previous_block.hash:
-                logging.error(f"Invalid link from block at index {i} to index {i-1}: Previous hash {current_block.previous_hash} does not match previous block's hash {previous_block.hash}.")
+                logger.error(f"Invalid link from block at index {i} to index {i-1}: Previous hash {current_block.previous_hash} does not match previous block's hash {previous_block.hash}.")
                 return False
             # Verify the proof of work for each block
             if not self.valid_proof(previous_block.proof, current_block.proof, self.difficulty):
-                logging.error(f"Invalid proof of work at block index {i}: Proof {current_block.proof} does not meet difficulty criteria of {self.difficulty}.")
+                logger.error(f"Invalid proof of work at block index {i}: Proof {current_block.proof} does not meet difficulty criteria of {self.difficulty}.")
                 return False
-        logging.info("All blocks are valid and correctly linked.")
+        logger.info("All blocks are valid and correctly linked.")
         return True
 
     @property
