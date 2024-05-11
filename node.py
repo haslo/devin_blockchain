@@ -100,7 +100,21 @@ class Node:
                     if not data:
                         break
                     # Process the data from the client
-                    print(f"Received data from {client_address}: {data}")
+                    # Assuming the data is in JSON format
+                    try:
+                        message = json.loads(data.decode('utf-8'))
+                        # Check the type of message
+                        if message['type'] == 'new_transaction':
+                            # Handle new transaction
+                            self.handle_new_transaction(message['transaction'])
+                        elif message['type'] == 'new_block':
+                            # Handle new block
+                            self.receive_block(message['block'])
+                        # Add more message types as needed
+                    except json.JSONDecodeError as e:
+                        print(f"Invalid JSON received from {client_address}: {e}")
+                    except KeyError as e:
+                        print(f"Missing key in message from {client_address}: {e}")
             except Exception as e:
                 print(f"Error handling client {client_address}: {e}")
 
