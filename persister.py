@@ -123,17 +123,6 @@ class Blockchain:
         """
         self.current_transactions.append(transaction)
 
-    def proof_of_work(self, last_proof):
-        """
-        Proof of Work Algorithm:
-        - Find a number 'p' that when hashed with the previous block's solution a hash with 4 leading 0's is produced.
-        :param last_proof: The proof of the previous block.
-        :return: A new proof.
-        """
-        proof = 0
-        while self.valid_proof(last_proof, proof) is False:
-            proof += 1
-        return proof
 
     @staticmethod
     def valid_proof(last_proof, proof):
