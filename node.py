@@ -11,6 +11,7 @@ class Node:
         self.nodes = set()
         self.blockchain = Blockchain()
         self.mempool = []
+        self.server_thread = None
 
         if bootstrap_node:
             self.connect_to_node(bootstrap_node)
@@ -64,12 +65,48 @@ class Node:
 
     def start_server(self):
         # Start the node server to listen for incoming connections
-        # This is a placeholder for the actual implementation
-        pass
+        self.server_thread = threading.Thread(target=self.run_server)
+        self.server_thread.start()
+
+    def run_server(self):
+        # This method will run in a separate thread to handle incoming connections
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
+            server_socket.bind((self.host, self.port))
+            server_socket.listen()
+            print(f"Node server listening on port {self.port}")
+
+            try:
+                while True:
+                    client_socket, client_address = server_socket.accept()
+                    print(f"Accepted connection from {client_address}")
+                    client_handler = threading.Thread(
+                        target=self.handle_client_connection,
+                        args=(client_socket, client_address)
+                    )
+                    client_handler.start()
+            except Exception as e:
+                print(f"Server error: {e}")
+            finally:
+                server_socket.close()
+
+    def handle_client_connection(self, client_socket, client_address):
+        # This method will handle the client connection
+        with client_socket:
+            try:
+                while True:
+                    data = client_socket.recv(1024)
+                    if not data:
+                        break
+                    # Process the data from the client
+                    print(f"Received data from {client_address}: {data}")
+            except Exception as e:
+                print(f"Error handling client {client_address}: {e}")
 
     def stop_server(self):
         # Stop the node server
-        # This is a placeholder for the actual implementation
-        pass
+        if self.server_thread:
+            # This is a placeholder for the actual implementation
+            # We would need to set a flag to stop the server loop and join the thread
+            pass
 
 # Implement additional methods as needed for p2p communication and node functionality
