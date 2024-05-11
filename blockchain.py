@@ -73,18 +73,19 @@ class Blockchain:
         }
         self.current_transactions.append(transaction)
 
-    def proof_of_work(self, last_proof):
+    def proof_of_work(self, last_block):
         """
         Proof of Work Algorithm:
-        - Find a number 'p' that when hashed with the previous block's solution a hash with a dynamic number of leading 0's is produced, based on the current difficulty level.
-        :param last_proof: The proof of the previous block.
+        - Find a number 'p' that when hashed with the previous block's proof a hash with a dynamic number of leading 0's is produced, based on the current difficulty level.
+        :param last_block: The last block in the blockchain.
         :return: A new proof.
         """
+        last_proof = last_block.proof
         proof = 0
         while not self.valid_proof(last_proof, proof, self.difficulty):
             proof += 1
-            # Log each attempt at finding a valid proof
-            logging.debug(f"Attempting proof: {proof}, Difficulty: {self.difficulty}")
+            # Log each attempt at finding a valid proof with the current difficulty level
+            logging.debug(f"Attempting proof: {proof}, Current difficulty: {self.difficulty}")
         logging.info(f"Proof found: {proof}, Difficulty: {self.difficulty}")
         return proof
 
@@ -136,6 +137,7 @@ class Blockchain:
             logging.debug(f"Validating block at index {i} with hash {current_block.hash}")
             # Check if the current block's hash is correct
             current_computed_hash = current_block.compute_hash()
+            logging.debug(f"Computed hash for block at index {i}: {current_computed_hash}, Difficulty used: {self.difficulty}")
             if current_block.hash != current_computed_hash:
                 logging.error(f"Invalid block at index {i}: Stored hash {current_block.hash} does not match computed hash {current_computed_hash}.")
                 return False
@@ -145,7 +147,7 @@ class Blockchain:
                 return False
             # Verify the proof of work for each block
             if not self.valid_proof(previous_block.proof, current_block.proof, self.difficulty):
-                logging.error(f"Invalid proof of work at block index {i}: Proof {current_block.proof} does not meet difficulty criteria.")
+                logging.error(f"Invalid proof of work at block index {i}: Proof {current_block.proof} does not meet difficulty criteria of {self.difficulty}.")
                 return False
         logging.info("All blocks are valid and correctly linked.")
         return True
