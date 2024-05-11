@@ -24,14 +24,22 @@ class Blockchain:
     """
     The Blockchain class is a wrapper around the chain of blocks and includes methods to add and validate blocks.
     """
-    def __init__(self):
+    def __init__(self, chain=None):
         """
         The constructor for the `Blockchain` class.
+        :param chain: An optional list of blocks to initialize the blockchain with.
         """
-        self.chain = []
         self.current_transactions = []
         self.difficulty = 4  # Default difficulty level of 4 leading zeroes
         self.test_mode = False  # Test mode is off by default
+        if chain is not None:
+            if self.valid_chain(chain):
+                self.chain = chain
+            else:
+                raise ValueError("Invalid chain provided")
+        else:
+            self.chain = []
+            # self.create_genesis_block()  # Genesis block creation is now handled externally
         # self.create_genesis_block()  # Genesis block creation is now handled externally
 
     def toggle_test_mode(self, mode: bool):
