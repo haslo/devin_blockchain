@@ -5,9 +5,9 @@ from miner import Miner
 def test_proof_of_work():
     blockchain = Blockchain()
     miner = Miner(blockchain)
-    last_proof = blockchain.last_block.proof
-    proof = miner.proof_of_work(last_proof)
-    assert miner.valid_proof(last_proof, proof)
+    last_block = blockchain.last_block
+    proof = miner.proof_of_work(last_block)
+    assert miner.valid_proof(last_block.proof, proof)
 
 def test_mine_block():
     blockchain = Blockchain()
