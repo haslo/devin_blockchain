@@ -11,10 +11,12 @@ logger = logging.getLogger(__name__)
 # Set up logging configuration
 log_level = os.getenv('BLOCKCHAIN_LOG_LEVEL', 'INFO')
 logger.setLevel(logging.getLevelName(log_level))
-handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
 
 class Blockchain:
