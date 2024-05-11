@@ -19,6 +19,7 @@ class Blockchain:
         """
         self.chain = []
         self.current_transactions = []
+        self.difficulty = 4  # Default difficulty level of 4 leading zeroes
         self.create_genesis_block()
 
     def create_genesis_block(self):
@@ -40,6 +41,10 @@ class Blockchain:
         block = Block(len(self.chain), transactions, previous_hash, proof)
         self.chain.append(block)
         self.current_transactions = []  # Clear the current transactions after creating a new block
+
+        # Adjust the difficulty for the next block based on the average mining time
+        self.adjust_difficulty()
+
         # Logging for debugging
         logging.info(f"Block created: {block}")
         logging.info(f"Block hash: {block.hash}")
@@ -69,26 +74,49 @@ class Blockchain:
     def proof_of_work(self, last_proof):
         """
         Proof of Work Algorithm:
-        - Find a number 'p' that when hashed with the previous block's solution a hash with 4 leading 0's is produced.
+        - Find a number 'p' that when hashed with the previous block's solution a hash with a dynamic number of leading 0's is produced, based on the current difficulty level.
         :param last_proof: The proof of the previous block.
         :return: A new proof.
         """
         proof = 0
-        while self.valid_proof(last_proof, proof) is False:
+        while not self.valid_proof(last_proof, proof, self.difficulty):
             proof += 1
         return proof
 
     @staticmethod
-    def valid_proof(last_proof, proof):
+    def valid_proof(last_proof, proof, difficulty=4):
         """
-        Validates the Proof: Does hash(last_proof, proof) contain 4 leading zeroes?
+        Validates the Proof: Does hash(last_proof, proof) contain a certain number of leading zeroes defined by difficulty?
         :param last_proof: Previous proof.
         :param proof: Current proof.
+        :param difficulty: The difficulty level of the proof of work required.
         :return: True if correct, False if not.
         """
         guess = f'{last_proof}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
-        return guess_hash[:4] == "0000"
+        return guess_hash[:difficulty] == "0" * difficulty
+
+    def adjust_difficulty(self, target_block_time=10):
+        """
+        Adjusts the difficulty of the proof of work algorithm dynamically to maintain a consistent block creation rate.
+        :param target_block_time: The desired time (in seconds) between blocks.
+        """
+        if len(self.chain) < 10:
+            # Not enough blocks to calculate the average mining time, keep the current difficulty
+            return
+
+        # Calculate the average time taken to mine the last 10 blocks
+        last_10_blocks = self.chain[-10:]
+        total_time = sum(last_10_blocks[i].timestamp - last_10_blocks[i - 1].timestamp for i in range(1, 10))
+        average_block_time = total_time / 9  # There are 9 intervals between 10 blocks
+
+        # Adjust difficulty based on the average block time
+        if average_block_time < target_block_time:
+            self.difficulty += 1
+        elif average_block_time > target_block_time:
+            self.difficulty = max(1, self.difficulty - 1)  # Ensure difficulty does not go below 1
+
+        logging.info(f"Difficulty adjusted to {self.difficulty}. Average block time: {average_block_time:.2f}s")
 
     def valid_chain(self):
         """
@@ -106,6 +134,10 @@ class Blockchain:
             # Check if the current block's previous hash is correct
             if current_block.previous_hash != previous_block.hash:
                 logging.error(f"Invalid link from block at index {i} to index {i-1}: Previous hash {current_block.previous_hash} does not match previous block's hash {previous_block.hash}.")
+                return False
+            # Verify the proof of work for each block
+            if not self.valid_proof(previous_block.proof, current_block.proof, self.difficulty):
+                logging.error(f"Invalid proof of work at block index {i}: Proof {current_block.proof} does not meet difficulty criteria.")
                 return False
         logging.info("All blocks are valid and correctly linked.")
         return True
