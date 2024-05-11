@@ -3,6 +3,7 @@ import threading
 import json
 from blockchain import Blockchain
 
+
 class Node:
     def __init__(self, port, bootstrap_node=None):
         self.host = '0.0.0.0'
@@ -23,7 +24,7 @@ class Node:
         try:
             # Create a new socket connection to the node
             with socket.create_connection(node_info) as sock:
-                # Send a hello message or similar handshake protocol
+                # Send a hello message, protocol not yet implemented
                 sock.sendall(b'Hello, node!')
                 # Add the node to the nodes set
                 self.add_node(node_info)
@@ -44,7 +45,10 @@ class Node:
         for node in self.nodes:
             try:
                 with socket.create_connection(node) as sock:
-                    # Send the block data as a json string
+                    print('---')
+                    print(sock)
+                    print('---')
+                    print(json.dumps(block).encode('utf-8'))
                     sock.sendall(json.dumps(block).encode('utf-8'))
             except Exception as e:
                 print(f"Failed to send block to {node}: {e}")
@@ -92,25 +96,19 @@ class Node:
                 server_socket.close()
 
     def handle_client_connection(self, client_socket, client_address):
-        # This method will handle the client connection
         with client_socket:
             try:
                 while True:
                     data = client_socket.recv(1024)
                     if not data:
                         break
-                    # Process the data from the client
-                    # Assuming the data is in JSON format
                     try:
                         message = json.loads(data.decode('utf-8'))
-                        # Check the type of message
+                        # protocol not yet implemented, these are placeholder handlers
                         if message['type'] == 'new_transaction':
-                            # Handle new transaction
                             self.handle_new_transaction(message['transaction'])
                         elif message['type'] == 'new_block':
-                            # Handle new block
                             self.receive_block(message['block'])
-                        # Add more message types as needed
                     except json.JSONDecodeError as e:
                         print(f"Invalid JSON received from {client_address}: {e}")
                     except KeyError as e:
@@ -119,10 +117,7 @@ class Node:
                 print(f"Error handling client {client_address}: {e}")
 
     def stop_server(self):
-        # Stop the node server
         if self.server_thread:
             self.server_running = False
             self.server_thread.join()
             print("Node server stopped.")
-
-# Implement additional methods as needed for p2p communication and node functionality

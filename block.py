@@ -2,10 +2,12 @@ import json
 import hashlib
 import time
 
+
 class Block:
     """
     A Block represents each 'item' in the blockchain.
     """
+
     def __init__(self, index, transactions, previous_hash, proof, difficulty, timestamp=None):
         """
         Constructor for the `Block` class.

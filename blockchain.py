@@ -1,29 +1,14 @@
 import hashlib
-import json
-import time
-import logging
-import os
 import random
 from block import Block
-
-# Create a module-level logger object
-logger = logging.getLogger(__name__)
-
-# Set up logging configuration
-log_level = os.getenv('BLOCKCHAIN_LOG_LEVEL', 'INFO')
-logger.setLevel(logging.getLevelName(log_level))
-
-if not logger.handlers:
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+from logger import Logger
 
 
 class Blockchain:
     """
     The Blockchain class is a wrapper around the chain of blocks and includes methods to add and validate blocks.
     """
+
     def __init__(self, chain=None):
         """
         The constructor for the `Blockchain` class.
@@ -32,17 +17,16 @@ class Blockchain:
         self.current_transactions = []
         self.difficulty = 4  # Default difficulty level of 4 leading zeroes
         self.test_mode = False  # Test mode is off by default
+        self.logger = Logger()
         if chain is not None:
             self.chain = chain
-            logger.info(f"Initializing Blockchain with provided chain: {self.chain}")
+            self.logger.info(f"Initializing Blockchain with provided chain: {self.chain}")
             if not self.valid_chain():
-                logger.error("Invalid chain provided during initialization.")
+                self.logger.error("Invalid chain provided during initialization.")
                 raise ValueError("Invalid chain provided")
         else:
             self.chain = []
-            logger.info("No chain provided, initializing with empty chain.")
-        # self.create_genesis_block()  # Genesis block creation is now handled externally
-        # self.create_genesis_block()  # Genesis block creation is now handled externally
+            self.logger.debug("No chain provided, initializing with empty chain.")
 
     def toggle_test_mode(self, mode: bool):
         """
@@ -52,24 +36,25 @@ class Blockchain:
         self.test_mode = mode
         self.difficulty = 2 if mode else 4  # Lower difficulty for testing
 
-    def create_genesis_block(self):
+    def create_genesis_block(self, difficulty=0):
         """
         A function to generate genesis block and appends it to the chain.
         The block has index 0, an empty transaction list, and a previous hash of "0".
         """
-        genesis_block = Block(0, [], "0", 0)
+        genesis_block = Block(0, [], "0", 0, difficulty, 0)
         self.chain.append(genesis_block)
 
-    def create_block(self, transactions, previous_hash, proof, adjust_diff=False):
+    def create_block(self, transactions, previous_hash, proof, difficulty, adjust_diff=False):
         """
         A function that adds a block to the blockchain.
         :param transactions: The list of transactions.
         :param previous_hash: The hash of the previous block.
         :param proof: The proof of work for this block.
+        :param difficulty: The difficulty level of the block.
         :param adjust_diff: A boolean indicating whether to adjust the difficulty after creating the block.
         :return: The new block.
         """
-        block = Block(len(self.chain), transactions, previous_hash, proof)
+        block = Block(len(self.chain), transactions, previous_hash, proof, difficulty)
         self.chain.append(block)
         self.current_transactions = []  # Clear the current transactions after creating a new block
 
@@ -78,10 +63,14 @@ class Blockchain:
             self.adjust_difficulty()
 
         # Logging for debugging
-        logger.info(f"Block created: {block}")
-        logger.info(f"Block hash: {block.hash}")
-        logger.info(f"Block's computed hash: {block.compute_hash()}")
+        self.logger.debug(f"Block created: {block}")
+        self.logger.debug(f"Block hash: {block.hash}")
+        self.logger.debug(f"Block's computed hash: {block.compute_hash()}")
         return block
+
+    def add_block(self, block):
+        self.chain.append(block)
+
 
     def validate_transaction(self, sender, recipient, amount):
         """
@@ -125,7 +114,7 @@ class Blockchain:
         current_difficulty = self.difficulty if not self.test_mode else 2  # Use a lower difficulty if in test mode
         while not self.valid_proof(last_proof, proof, current_difficulty):
             proof = random.randint(0, 999999999)
-        logger.info(f"Proof found: {proof}, Difficulty: {current_difficulty}")
+        self.logger.debug(f"Proof found: {proof}, Difficulty: {current_difficulty}")
         return proof
 
     @staticmethod
@@ -140,7 +129,7 @@ class Blockchain:
         guess = f'{last_proof}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
         valid = guess_hash[:difficulty] == "0" * difficulty
-        logger.info(f"Validating proof: {proof}, Guess: {guess.decode()}, Guess hash: {guess_hash}, Required leading zeroes: {'0' * difficulty}, Valid: {valid}")
+        Logger().debug(f"Validating proof: {proof}, Guess: {guess.decode()}, Guess hash: {guess_hash}, Required leading zeroes: {'0' * difficulty}, Valid: {valid}")
         return valid
 
     def adjust_difficulty(self, target_block_time=10):
@@ -163,7 +152,7 @@ class Blockchain:
         elif average_block_time > target_block_time:
             self.difficulty = max(1, self.difficulty - 1)  # Ensure difficulty does not go below 1
 
-        logger.info(f"Difficulty adjusted to {self.difficulty}. Average block time: {average_block_time:.2f}s")
+        self.logger.info(f"Difficulty adjusted to {self.difficulty}. Average block time: {average_block_time:.2f}s")
 
     def valid_chain(self):
         """
@@ -173,24 +162,24 @@ class Blockchain:
         for i in range(1, len(self.chain)):
             previous_block = self.chain[i - 1]
             current_block = self.chain[i]
-            logger.debug(f"Validating block at index {i} with hash {current_block.hash}")
+            self.logger.debug(f"Validating block at index {i} with hash {current_block.hash}")
             # Check if the current block's hash is correct
             current_computed_hash = current_block.compute_hash()
-            logger.debug(f"Computed hash for block at index {i}: {current_computed_hash}, Difficulty used: {self.difficulty}")
+            self.logger.debug(f"Computed hash for block at index {i}: {current_computed_hash}, Difficulty used: {self.difficulty}")
             if current_block.hash != current_computed_hash:
-                logger.error(f"Invalid block at index {i}: Stored hash {current_block.hash} does not match computed hash {current_computed_hash}.")
+                self.logger.error(f"Invalid block at index {i}: Stored hash {current_block.hash} does not match computed hash {current_computed_hash}.")
                 return False
             # Check if the current block's previous hash is correct
             if current_block.previous_hash != previous_block.hash:
-                logger.error(f"Invalid link from block at index {i} to index {i-1}: Previous hash {current_block.previous_hash} does not match previous block's hash {previous_block.hash}.")
+                self.logger.error(
+                    f"Invalid link from block at index {i} to index {i - 1}: Previous hash {current_block.previous_hash} does not match previous block's hash {previous_block.hash}.")
                 return False
             # Verify the proof of work for each block
-            # The difficulty level should be the one that was used when the block was mined
-            block_difficulty = current_block.difficulty if hasattr(current_block, 'difficulty') else self.difficulty
+            block_difficulty = current_block.difficulty
             if not self.valid_proof(previous_block.proof, current_block.proof, block_difficulty):
-                logger.error(f"Invalid proof of work at block index {i}: Proof {current_block.proof} does not meet difficulty criteria of {block_difficulty}.")
+                self.logger.error(f"Invalid proof of work at block index {i}: Proof {current_block.proof} does not meet difficulty criteria of {block_difficulty}.")
                 return False
-        logger.info("All blocks are valid and correctly linked.")
+        self.logger.info("All blocks are valid and correctly linked.")
         return True
 
     @property
@@ -215,5 +204,3 @@ class Blockchain:
         return (f"Blockchain("
                 f"chain={self.chain}, "
                 f"current_transactions={self.current_transactions})")
-
-# End of the Blockchain class

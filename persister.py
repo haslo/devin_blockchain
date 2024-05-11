@@ -1,8 +1,8 @@
 import json
 import os
-import datetime
 import hashlib
 from block import Block
+
 
 class Persister:
     """
@@ -20,9 +20,10 @@ class Persister:
                 block_dict = {
                     'index': o.index,
                     'timestamp': o.timestamp,
-                    'transactions': [txn if isinstance(txn, dict) else txn.__dict__ for txn in o.transactions],
+                    'transactions': o.transactions,
                     'previous_hash': o.previous_hash,
                     'proof': o.proof,
+                    'difficulty': o.difficulty,
                     'hash': o.hash
                 }
                 return block_dict
@@ -61,6 +62,7 @@ class Persister:
                         block_data['transactions'],
                         block_data['previous_hash'],
                         block_data['proof'],
+                        block_data['difficulty'],
                         block_data['timestamp']
                     )
                     blockchain.chain.append(block)
@@ -74,6 +76,7 @@ class Blockchain:
     """
     The Blockchain class is a wrapper around the chain of blocks and includes methods to add and validate blocks.
     """
+
     def __init__(self):
         """
         The constructor for the `Blockchain` class.
@@ -87,7 +90,7 @@ class Blockchain:
         A function to generate genesis block and appends it to the chain.
         The block has index 0, an empty transaction list, and a previous hash of "0".
         """
-        genesis_block = Block(0, [], "0", 1)
+        genesis_block = Block(0, [], "0", 1, 0)
         self.chain.append(genesis_block)
 
     def create_block(self, transactions, previous_hash, proof):
@@ -108,7 +111,6 @@ class Blockchain:
         :param transaction: The transaction to add.
         """
         self.current_transactions.append(transaction)
-
 
     @staticmethod
     def valid_proof(last_proof, proof):

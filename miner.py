@@ -2,6 +2,7 @@ import hashlib
 import json
 from time import time
 
+
 class Miner:
     def __init__(self, blockchain):
         self.blockchain = blockchain
@@ -9,23 +10,24 @@ class Miner:
     def proof_of_work(self, last_block):
         """
         Simple Proof of Work Algorithm:
-        - Find a number p' such that hash(pp') contains leading 4 zeroes, where p is the previous p'
+        - Find a number p' such that hash(pp') contains leading <difficulty> zeroes, where p is the previous p'
         - p is the previous proof, and p' is the new proof
         """
         last_proof = last_block.proof
+        last_difficulty = last_block.difficulty
         proof = 0
-        while self.valid_proof(last_proof, proof) is False:
+        while self.valid_proof(last_proof, proof, last_difficulty) is False:
             proof += 1
         return proof
 
     @staticmethod
-    def valid_proof(last_proof, proof):
+    def valid_proof(last_proof, proof, difficulty):
         """
         Validates the Proof: Does hash(last_proof, proof) contain 4 leading zeroes?
         """
         guess = f'{last_proof}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
-        return guess_hash[:4] == "0000"
+        return guess_hash[:difficulty] == "0" * difficulty
 
     def mine(self, recipient_address):
         """
@@ -48,7 +50,7 @@ class Miner:
         # but before the new block is created to ensure it reflects the state of the blockchain
         # just before the new block is added.
         previous_hash = self.blockchain.last_block.hash
-
-        block = self.blockchain.create_block(self.blockchain.current_transactions, previous_hash, proof)
+        self.blockchain.adjust_difficulty()
+        block = self.blockchain.create_block(self.blockchain.current_transactions, previous_hash, proof, self.blockchain.difficulty)
 
         return block

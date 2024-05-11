@@ -4,12 +4,13 @@ import json
 from blockchain import Blockchain
 from persister import Persister
 
+
 def test_save_blockchain():
     # Create a blockchain and add a block
     blockchain = Blockchain()
     blockchain.create_genesis_block()  # Ensure the genesis block is created
     blockchain.add_transaction(sender="a", recipient="b", amount=1)
-    blockchain.create_block(transactions=blockchain.current_transactions, previous_hash=blockchain.last_block.hash, proof=100)
+    blockchain.create_block(transactions=blockchain.current_transactions, previous_hash=blockchain.last_block.hash, difficulty=blockchain.last_block.difficulty, proof=100)
 
     # Save the blockchain to a file
     persister = Persister()
@@ -22,12 +23,13 @@ def test_save_blockchain():
     # Clean up the file after test
     os.remove(filename)
 
+
 def test_load_blockchain():
     # Create a blockchain and add a block
     blockchain = Blockchain()
     blockchain.create_genesis_block()  # Ensure the genesis block is created
     blockchain.add_transaction(sender="a", recipient="b", amount=1)
-    blockchain.create_block(transactions=blockchain.current_transactions, previous_hash=blockchain.last_block.hash, proof=100)
+    blockchain.create_block(transactions=blockchain.current_transactions, previous_hash=blockchain.last_block.hash, difficulty=blockchain.last_block.difficulty, proof=100)
 
     # Save the blockchain to a file
     persister = Persister()
@@ -43,11 +45,13 @@ def test_load_blockchain():
     # Clean up the file after test
     os.remove(filename)
 
+
 def test_load_nonexistent_blockchain():
     # Attempt to load a blockchain from a non-existent file
     persister = Persister()
     with pytest.raises(FileNotFoundError):
         persister.load('nonexistent.json')
+
 
 def test_load_blockchain_invalid_json():
     # Attempt to load a blockchain from a file with invalid JSON
@@ -62,13 +66,14 @@ def test_load_blockchain_invalid_json():
     # Clean up the file after test
     os.remove(filename)
 
+
 # New test case for saving and loading a blockchain, then comparing the two
 def test_save_and_load_blockchain():
     # Create a blockchain and add a block
     blockchain = Blockchain()
     blockchain.create_genesis_block()  # Ensure the genesis block is created
     blockchain.add_transaction(sender="a", recipient="b", amount=1)
-    blockchain.create_block(transactions=blockchain.current_transactions, previous_hash=blockchain.last_block.hash, proof=100)
+    blockchain.create_block(transactions=blockchain.current_transactions, previous_hash=blockchain.last_block.hash, difficulty=blockchain.last_block.difficulty, proof=100)
 
     # Save the blockchain to a file
     persister = Persister()
@@ -89,6 +94,7 @@ def test_save_and_load_blockchain():
     # Clean up the file after test
     os.remove(filename)
 
+
 # New test case for loading a blockchain from a pre-saved file in the fixtures folder
 def test_load_blockchain_from_fixture():
     # Load the blockchain from the pre-saved fixture file
@@ -101,7 +107,10 @@ def test_load_blockchain_from_fixture():
     expected_blockchain.create_genesis_block()  # Ensure the genesis block is created
     expected_blockchain.add_transaction(sender="a", recipient="b", amount=1)
     # Use the correct hash of the genesis block for the previous_hash of the second block
-    expected_blockchain.create_block(transactions=expected_blockchain.current_transactions, previous_hash="feb534fe03366345fe7b6ed8e5367ac9a4e219ead99b690d9f73cbff1687d904", proof=100)
+    expected_blockchain.create_block(transactions=expected_blockchain.current_transactions,
+                                     previous_hash="feb534fe03366345fe7b6ed8e5367ac9a4e219ead99b690d9f73cbff1687d904",
+                                     proof=100,
+                                     difficulty=1)
 
     # Compare the loaded blockchain to the expected blockchain
     # Ensure that the structure and content of the blocks are consistent
@@ -109,3 +118,4 @@ def test_load_blockchain_from_fixture():
         assert expected_block.index == loaded_block.index
         assert expected_block.transactions == loaded_block.transactions
         assert expected_block.previous_hash == loaded_block.previous_hash
+        assert expected_block.difficulty == loaded_block.difficulty

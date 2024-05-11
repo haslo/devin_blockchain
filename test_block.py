@@ -1,6 +1,7 @@
 import unittest
 from block import Block
 
+
 class TestBlock(unittest.TestCase):
 
     def test_block_creation(self):
@@ -8,7 +9,7 @@ class TestBlock(unittest.TestCase):
         transactions = [{'sender': 'a', 'recipient': 'b', 'amount': 1}]
         previous_hash = 'abc'
         proof = 12345
-        block = Block(index=1, transactions=transactions, previous_hash=previous_hash, proof=proof)
+        block = Block(index=1, transactions=transactions, previous_hash=previous_hash, difficulty=0, proof=proof)
 
         self.assertEqual(block.index, 1)
         self.assertEqual(block.transactions, transactions)
@@ -21,11 +22,12 @@ class TestBlock(unittest.TestCase):
         transactions = [{'sender': 'a', 'recipient': 'b', 'amount': 1}]
         previous_hash = 'abc'
         proof = 12345
-        block = Block(index=1, transactions=transactions, previous_hash=previous_hash, proof=proof)
+        block = Block(index=1, transactions=transactions, previous_hash=previous_hash, difficulty=0, proof=proof)
         computed_hash = block.compute_hash()
 
         self.assertIsInstance(computed_hash, str)
-        self.assertEqual(len(computed_hash), 64)  # Assuming SHA-256 is used
+        self.assertEqual(len(computed_hash), 64)
+
 
 if __name__ == '__main__':
     unittest.main()
