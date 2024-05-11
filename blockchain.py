@@ -3,6 +3,7 @@ import json
 import time
 import logging
 import os
+import random
 from block import Block
 
 # Create a module-level logger object
@@ -100,6 +101,8 @@ class Blockchain:
         }
         self.current_transactions.append(transaction)
 
+    import random
+
     def proof_of_work(self, last_block):
         """
         Proof of Work Algorithm:
@@ -108,10 +111,10 @@ class Blockchain:
         :return: A new proof.
         """
         last_proof = last_block.proof
-        proof = 0
+        proof = random.randint(0, 999999999)
         current_difficulty = self.difficulty if not self.test_mode else 2  # Use a lower difficulty if in test mode
         while not self.valid_proof(last_proof, proof, current_difficulty):
-            proof += 1
+            proof = random.randint(0, 999999999)
         logger.info(f"Proof found: {proof}, Difficulty: {current_difficulty}")
         return proof
 

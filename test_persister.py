@@ -13,7 +13,7 @@ def test_save_blockchain():
 
     # Save the blockchain to a file
     persister = Persister()
-    filename = 'test_save.devinchain'
+    filename = 'test_save.json'
     persister.save(blockchain, filename)
 
     # Check that the file exists
@@ -31,7 +31,7 @@ def test_load_blockchain():
 
     # Save the blockchain to a file
     persister = Persister()
-    filename = 'test_load.devinchain'
+    filename = 'test_load.json'
     persister.save(blockchain, filename)
 
     # Load the blockchain from the file
@@ -47,12 +47,12 @@ def test_load_nonexistent_blockchain():
     # Attempt to load a blockchain from a non-existent file
     persister = Persister()
     with pytest.raises(FileNotFoundError):
-        persister.load('nonexistent.devinchain')
+        persister.load('nonexistent.json')
 
 def test_load_blockchain_invalid_json():
     # Attempt to load a blockchain from a file with invalid JSON
     persister = Persister()
-    filename = 'test_invalid_json.devinchain'
+    filename = 'test_invalid_json.json'
     with open(filename, 'w') as file:
         file.write("This is not valid JSON")
 
@@ -72,7 +72,7 @@ def test_save_and_load_blockchain():
 
     # Save the blockchain to a file
     persister = Persister()
-    filename = 'test_save_load.devinchain'
+    filename = 'test_save_load.json'
     persister.save(blockchain, filename)
 
     # Load the blockchain from the file
@@ -93,7 +93,7 @@ def test_save_and_load_blockchain():
 def test_load_blockchain_from_fixture():
     # Load the blockchain from the pre-saved fixture file
     persister = Persister()
-    fixture_filename = 'fixtures/test_blockchain.devinchain'
+    fixture_filename = 'fixtures/test_blockchain.json'
     loaded_blockchain = persister.load(fixture_filename)
 
     # Manually create a blockchain instance that matches the expected data from the fixture

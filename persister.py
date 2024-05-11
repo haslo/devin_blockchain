@@ -29,7 +29,7 @@ class Persister:
             return json.JSONEncoder.default(self, o)
 
     @staticmethod
-    def save(blockchain, filename="blockchain.devinchain"):
+    def save(blockchain, filename="blockchain.json"):
         """
         Saves the blockchain to a file in JSON format using a custom encoder.
         :param blockchain: The blockchain to save.
@@ -39,7 +39,7 @@ class Persister:
             json.dump(blockchain.chain, file, cls=Persister.BlockEncoder, indent=4, sort_keys=True)
 
     @staticmethod
-    def load(filename="blockchain.devinchain"):
+    def load(filename="blockchain.json"):
         """
         Loads the blockchain from a file in JSON format.
         :param filename: The name of the file to load the blockchain from.

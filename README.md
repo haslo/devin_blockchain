@@ -22,12 +22,12 @@ cd devin_blockchain
 
 3. Create a virtual environment (optional but recommended):
 ```
-python3 -m venv blockchain-env
+python3 -m venv /venv
 ```
 
 4. Activate the virtual environment:
 ```
-source blockchain-env/bin/activate
+source /venv/bin/activate
 ```
 
 5. Install the required packages:
@@ -49,7 +49,7 @@ pytest
 
 ## Persistence
 
-The blockchain can be saved to and loaded from `.devinchain` files, allowing for persistence across sessions. To save the current state of the blockchain, use the `save` method from the `Persister` class. To load an existing blockchain, use the `load` method.
+The blockchain can be saved to and loaded from `.json` files, allowing for persistence across sessions. To save the current state of the blockchain, use the `save` method from the `Persister` class. To load an existing blockchain, use the `load` method.
 
 ## Mining
 
