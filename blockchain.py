@@ -33,13 +33,15 @@ class Blockchain:
         self.difficulty = 4  # Default difficulty level of 4 leading zeroes
         self.test_mode = False  # Test mode is off by default
         if chain is not None:
-            if self.valid_chain(chain):
-                self.chain = chain
-            else:
+            self.chain = chain
+            logger.info(f"Initializing Blockchain with provided chain: {self.chain}")
+            if not self.valid_chain():
+                logger.error("Invalid chain provided during initialization.")
                 raise ValueError("Invalid chain provided")
         else:
             self.chain = []
-            # self.create_genesis_block()  # Genesis block creation is now handled externally
+            logger.info("No chain provided, initializing with empty chain.")
+        # self.create_genesis_block()  # Genesis block creation is now handled externally
         # self.create_genesis_block()  # Genesis block creation is now handled externally
 
     def toggle_test_mode(self, mode: bool):
@@ -183,8 +185,10 @@ class Blockchain:
                 logger.error(f"Invalid link from block at index {i} to index {i-1}: Previous hash {current_block.previous_hash} does not match previous block's hash {previous_block.hash}.")
                 return False
             # Verify the proof of work for each block
-            if not self.valid_proof(previous_block.proof, current_block.proof, self.difficulty):
-                logger.error(f"Invalid proof of work at block index {i}: Proof {current_block.proof} does not meet difficulty criteria of {self.difficulty}.")
+            # The difficulty level should be the one that was used when the block was mined
+            block_difficulty = current_block.difficulty if hasattr(current_block, 'difficulty') else self.difficulty
+            if not self.valid_proof(previous_block.proof, current_block.proof, block_difficulty):
+                logger.error(f"Invalid proof of work at block index {i}: Proof {current_block.proof} does not meet difficulty criteria of {block_difficulty}.")
                 return False
         logger.info("All blocks are valid and correctly linked.")
         return True
