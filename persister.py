@@ -20,7 +20,7 @@ class Persister:
                 block_dict = {
                     'index': o.index,
                     'timestamp': o.timestamp,
-                    'transactions': [txn.__dict__ for txn in o.transactions],
+                    'transactions': [txn if isinstance(txn, dict) else txn.__dict__ for txn in o.transactions],
                     'previous_hash': o.previous_hash,
                     'proof': o.proof,
                     'hash': o.hash

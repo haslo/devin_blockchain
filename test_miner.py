@@ -4,6 +4,7 @@ from miner import Miner
 
 def test_proof_of_work():
     blockchain = Blockchain()
+    blockchain.create_genesis_block()  # Ensure the genesis block is created
     miner = Miner(blockchain)
     last_block = blockchain.last_block
     proof = miner.proof_of_work(last_block)
@@ -11,6 +12,7 @@ def test_proof_of_work():
 
 def test_mine_block():
     blockchain = Blockchain()
+    blockchain.create_genesis_block()  # Ensure the genesis block is created
     miner = Miner(blockchain)
     recipient_address = "test_address"
 

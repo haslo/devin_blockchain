@@ -7,8 +7,9 @@ from persister import Persister
 def test_save_blockchain():
     # Create a blockchain and add a block
     blockchain = Blockchain()
+    blockchain.create_genesis_block()  # Ensure the genesis block is created
     blockchain.add_transaction(sender="a", recipient="b", amount=1)
-    blockchain.create_block(transactions=blockchain.current_transactions, previous_hash='1', proof=100)
+    blockchain.create_block(transactions=blockchain.current_transactions, previous_hash=blockchain.last_block.hash, proof=100)
 
     # Save the blockchain to a file
     persister = Persister()
@@ -24,8 +25,9 @@ def test_save_blockchain():
 def test_load_blockchain():
     # Create a blockchain and add a block
     blockchain = Blockchain()
+    blockchain.create_genesis_block()  # Ensure the genesis block is created
     blockchain.add_transaction(sender="a", recipient="b", amount=1)
-    blockchain.create_block(transactions=blockchain.current_transactions, previous_hash='1', proof=100)
+    blockchain.create_block(transactions=blockchain.current_transactions, previous_hash=blockchain.last_block.hash, proof=100)
 
     # Save the blockchain to a file
     persister = Persister()
@@ -64,8 +66,9 @@ def test_load_blockchain_invalid_json():
 def test_save_and_load_blockchain():
     # Create a blockchain and add a block
     blockchain = Blockchain()
+    blockchain.create_genesis_block()  # Ensure the genesis block is created
     blockchain.add_transaction(sender="a", recipient="b", amount=1)
-    blockchain.create_block(transactions=blockchain.current_transactions, previous_hash='1', proof=100)
+    blockchain.create_block(transactions=blockchain.current_transactions, previous_hash=blockchain.last_block.hash, proof=100)
 
     # Save the blockchain to a file
     persister = Persister()
@@ -78,5 +81,31 @@ def test_save_and_load_blockchain():
     # Compare the blockchains to ensure they are the same
     assert loaded_blockchain.chain == blockchain.chain
 
+    # Explicitly test hashes and transactions
+    for original_block, loaded_block in zip(blockchain.chain, loaded_blockchain.chain):
+        assert original_block.hash == loaded_block.hash
+        assert original_block.transactions == loaded_block.transactions
+
     # Clean up the file after test
     os.remove(filename)
+
+# New test case for loading a blockchain from a pre-saved file in the fixtures folder
+def test_load_blockchain_from_fixture():
+    # Load the blockchain from the pre-saved fixture file
+    persister = Persister()
+    fixture_filename = 'fixtures/test_blockchain.devinchain'
+    loaded_blockchain = persister.load(fixture_filename)
+
+    # Manually create a blockchain instance that matches the expected data from the fixture
+    expected_blockchain = Blockchain()
+    expected_blockchain.create_genesis_block()  # Ensure the genesis block is created
+    expected_blockchain.add_transaction(sender="a", recipient="b", amount=1)
+    # Use the hash of the genesis block for the previous_hash of the second block
+    expected_blockchain.create_block(transactions=expected_blockchain.current_transactions, previous_hash=expected_blockchain.last_block.hash, proof=100)
+
+    # Compare the loaded blockchain to the expected blockchain
+    # Ensure that the structure and content of the blocks are consistent
+    for expected_block, loaded_block in zip(expected_blockchain.chain, loaded_blockchain.chain):
+        assert expected_block.index == loaded_block.index
+        assert expected_block.transactions == loaded_block.transactions
+        assert expected_block.previous_hash == loaded_block.previous_hash

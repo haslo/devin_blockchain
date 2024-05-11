@@ -8,6 +8,7 @@ def blockchain():
     blockchain = Blockchain()
     logging.info("Enabling test mode.")
     blockchain.toggle_test_mode(True)
+    blockchain.create_genesis_block()
     yield blockchain
     logging.info("Disabling test mode.")
     blockchain.toggle_test_mode(False)

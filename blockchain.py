@@ -2,13 +2,17 @@ import hashlib
 import json
 import time
 import logging
+import os
 from block import Block
 
 # Create a module-level logger object
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)  # Default logging level
+
+# Set up logging configuration
+log_level = os.getenv('BLOCKCHAIN_LOG_LEVEL', 'INFO')
+logger.setLevel(logging.getLevelName(log_level))
 handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
@@ -25,7 +29,7 @@ class Blockchain:
         self.current_transactions = []
         self.difficulty = 4  # Default difficulty level of 4 leading zeroes
         self.test_mode = False  # Test mode is off by default
-        self.create_genesis_block()
+        # self.create_genesis_block()  # Genesis block creation is now handled externally
 
     def toggle_test_mode(self, mode: bool):
         """
@@ -66,9 +70,9 @@ class Blockchain:
         logger.info(f"Block's computed hash: {block.compute_hash()}")
         return block
 
-    def add_transaction(self, sender, recipient, amount):
+    def validate_transaction(self, sender, recipient, amount):
         """
-        Adds a new transaction to the list of transactions after validating it.
+        Validates a transaction to ensure the sender and recipient are specified and the amount is positive.
         :param sender: The sender of the transaction.
         :param recipient: The recipient of the transaction.
         :param amount: The amount of the transaction.
@@ -79,6 +83,14 @@ class Blockchain:
         if amount <= 0:
             raise ValueError("Transaction amount must be positive.")
 
+    def add_transaction(self, sender, recipient, amount):
+        """
+        Adds a new transaction to the list of transactions after validating it.
+        :param sender: The sender of the transaction.
+        :param recipient: The recipient of the transaction.
+        :param amount: The amount of the transaction.
+        """
+        self.validate_transaction(sender, recipient, amount)
         transaction = {
             'sender': sender,
             'recipient': recipient,
@@ -98,8 +110,6 @@ class Blockchain:
         current_difficulty = self.difficulty if not self.test_mode else 2  # Use a lower difficulty if in test mode
         while not self.valid_proof(last_proof, proof, current_difficulty):
             proof += 1
-            # Log each attempt at finding a valid proof with the current difficulty level
-            logger.debug(f"Attempting proof: {proof}, Current difficulty: {current_difficulty}")
         logger.info(f"Proof found: {proof}, Difficulty: {current_difficulty}")
         return proof
 

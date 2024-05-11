@@ -1,0 +1,24 @@
+[
+    {
+        "hash": "feb534fe03366345fe7b6ed8e5367ac9a4e219ead99b690d9f73cbff1687d904",
+        "index": 0,
+        "previous_hash": "0",
+        "proof": 0,
+        "timestamp": 1715419619,
+        "transactions": []
+    },
+    {
+        "hash": "57d08c3a65fac82d834b9d1cc9f641038cfde0fa302024d2c34368d50606d59a",
+        "index": 1,
+        "previous_hash": "feb534fe03366345fe7b6ed8e5367ac9a4e219ead99b690d9f73cbff1687d904",
+        "proof": 100,
+        "timestamp": 1715419619,
+        "transactions": [
+            {
+                "amount": 1,
+                "recipient": "b",
+                "sender": "a"
+            }
+        ]
+    }
+]
