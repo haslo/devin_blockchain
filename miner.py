@@ -6,12 +6,13 @@ class Miner:
     def __init__(self, blockchain):
         self.blockchain = blockchain
 
-    def proof_of_work(self, last_proof):
+    def proof_of_work(self, last_block):
         """
         Simple Proof of Work Algorithm:
         - Find a number p' such that hash(pp') contains leading 4 zeroes, where p is the previous p'
         - p is the previous proof, and p' is the new proof
         """
+        last_proof = last_block.proof
         proof = 0
         while self.valid_proof(last_proof, proof) is False:
             proof += 1
@@ -34,8 +35,7 @@ class Miner:
         - Forge the new Block by adding it to the chain
         """
         last_block = self.blockchain.last_block
-        last_proof = last_block.proof
-        proof = self.proof_of_work(last_proof)
+        proof = self.proof_of_work(last_block)
 
         # Reward for finding the proof
         self.blockchain.add_transaction(
