@@ -53,6 +53,7 @@ class Persister:
                 except json.JSONDecodeError:
                     raise Persister.InvalidJSONError("File is not valid JSON.")
 
+                from blockchain.blockchain import Blockchain
                 blockchain = Blockchain()
                 blockchain.chain = []
 
@@ -70,78 +71,3 @@ class Persister:
                 return blockchain
         else:
             raise FileNotFoundError(f"The file {filename} does not exist.")
-
-
-class Blockchain:
-    """
-    The Blockchain class is a wrapper around the chain of blocks and includes methods to add and validate blocks.
-    """
-
-    def __init__(self):
-        """
-        The constructor for the `Blockchain` class.
-        """
-        self.chain = []
-        self.current_transactions = []
-        self.create_genesis_block()
-
-    def create_genesis_block(self):
-        """
-        A function to generate genesis block and appends it to the chain.
-        The block has index 0, an empty transaction list, and a previous hash of "0".
-        """
-        genesis_block = Block(0, [], "0", 1, 0)
-        self.chain.append(genesis_block)
-
-    def create_block(self, transactions, previous_hash, proof):
-        """
-        A function that adds a block to the blockchain.
-        :param transactions: The list of transactions.
-        :param previous_hash: The hash of the previous block.
-        :param proof: The proof of work for this block.
-        :return: The new block.
-        """
-        block = Block(len(self.chain), transactions, previous_hash, proof)
-        self.chain.append(block)
-        return block
-
-    def add_transaction(self, transaction):
-        """
-        Adds a new transaction to the list of transactions.
-        :param transaction: The transaction to add.
-        """
-        self.current_transactions.append(transaction)
-
-    @staticmethod
-    def valid_proof(last_proof, proof):
-        """
-        Validates the Proof: Does hash(last_proof, proof) contain 4 leading zeroes?
-        :param last_proof: Previous proof.
-        :param proof: Current proof.
-        :return: True if correct, False if not.
-        """
-        guess = f'{last_proof}{proof}'.encode()
-        guess_hash = hashlib.sha256(guess).hexdigest()
-        return guess_hash[:4] == "0000"
-
-    def valid_chain(self):
-        """
-        Determine if a given blockchain is valid.
-        :return: True if valid, False if not.
-        """
-        for i in range(1, len(self.chain)):
-            previous_block = self.chain[i - 1]
-            current_block = self.chain[i]
-            if current_block.hash != current_block.compute_hash():
-                return False
-            if current_block.previous_hash != previous_block.hash:
-                return False
-        return True
-
-    def __repr__(self):
-        """
-        A function to print out the blockchain contents in a readable format.
-        """
-        return (f"Blockchain("
-                f"chain={self.chain}, "
-                f"current_transactions={self.current_transactions})")
