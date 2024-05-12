@@ -1,4 +1,6 @@
 import hashlib
+import json
+from ecdsa import VerifyingKey, BadSignatureError, NIST384p
 import random
 from blockchain.block import Block
 from util.logger import Logger
@@ -72,32 +74,62 @@ class Blockchain:
         self.chain.append(block)
 
 
-    def validate_transaction(self, sender, recipient, amount):
+    def validate_transaction(self, transaction):
         """
-        Validates a transaction to ensure the sender and recipient are specified and the amount is positive.
-        :param sender: The sender of the transaction.
-        :param recipient: The recipient of the transaction.
-        :param amount: The amount of the transaction.
-        :raise ValueError: If sender or recipient is empty, or amount is not positive.
+        Validates a transaction to ensure it follows the new protocol structure and that the signature is valid.
+        :param transaction: The transaction to validate.
+        :raise ValueError: If the transaction is invalid.
         """
-        if not sender or not recipient:
-            raise ValueError("Sender and recipient must be specified.")
-        if amount <= 0:
-            raise ValueError("Transaction amount must be positive.")
+        required_fields = ["type", "sender", "payload", "nonce", "chain", "gas", "signature"]
+        for field in required_fields:
+            if field not in transaction:
+                raise ValueError(f"Transaction is missing required field: {field}")
 
-    def add_transaction(self, sender, recipient, amount):
+        # Validate payload structure
+        if not isinstance(transaction['payload'], dict) or "recipient" not in transaction['payload'] or "amount" not in transaction['payload']:
+            raise ValueError("Invalid payload structure")
+
+        # Validate nonce
+        if not isinstance(transaction['nonce'], int) or transaction['nonce'] < 0:
+            raise ValueError("Invalid nonce")
+
+        # Validate gas structure and values
+        if not isinstance(transaction['gas'], dict) or "tip" not in transaction['gas'] or "max_fee" not in transaction['gas'] or "limit" not in transaction['gas']:
+            raise ValueError("Invalid gas structure")
+        if any(not isinstance(transaction['gas'][key], int) or transaction['gas'][key] < 0 for key in ["tip", "max_fee", "limit"]):
+            raise ValueError("Invalid gas values")
+
+        # Validate signature structure and values
+        if not isinstance(transaction['signature'], dict) or "type" not in transaction['signature'] or "r" not in transaction['signature'] or "s" not in transaction['signature'] or "v" not in transaction['signature'] or "public_key" not in transaction['signature']:
+            raise ValueError("Invalid signature structure")
+
+        # Assuming validate_signature is a method to be implemented
+        if not self.validate_signature(transaction):
+            raise ValueError("Invalid signature")
+
+    def validate_signature(self, transaction):
+        """
+        Validates the signature of a transaction.
+        :param transaction: The transaction with the signature to validate.
+        :return: True if the signature is valid, False otherwise.
+        """
+        signature = transaction['signature']
+        message = json.dumps(transaction, sort_keys=True).encode()
+        try:
+            vk = VerifyingKey.from_string(bytes.fromhex(signature['public_key']), curve=NIST384p)
+            vk.verify(bytes.fromhex(signature['r'] + signature['s']), message)
+            return True
+        except BadSignatureError:
+            return False
+
+    def add_transaction(self, transaction):
         """
         Adds a new transaction to the list of transactions after validating it.
-        :param sender: The sender of the transaction.
-        :param recipient: The recipient of the transaction.
-        :param amount: The amount of the transaction.
+        :param transaction: The transaction dictionary.
         """
-        self.validate_transaction(sender, recipient, amount)
-        transaction = {
-            'sender': sender,
-            'recipient': recipient,
-            'amount': amount
-        }
+        # Validate the transaction
+        self.validate_transaction(transaction)
+        # If the transaction is valid, add it to the list of current transactions
         self.current_transactions.append(transaction)
 
     def proof_of_work(self, last_block):

@@ -27,9 +27,206 @@ def test_blockchain_initialization(blockchain):
 
 
 def test_add_transaction(blockchain):
-    blockchain.add_transaction(sender="Alice", recipient="Bob", amount=5)
+    transaction = {
+        "type": "transfer",
+        "sender": "Alice",
+        "payload": {
+            "recipient": "Bob",
+            "amount": 5
+        },
+        "nonce": 0,
+        "chain": {
+            "chain_id": "HDC",
+            "version": 1
+        },
+        "gas": {
+            "tip": 1,
+            "max_fee": 1000,
+            "limit": 2000
+        },
+        "signature": {
+            "type": "ECDSA",
+            "r": "7fa6b9a6e0e27e9b9e1e95fc173fbec9f95a2ec3e6a4a12d327e3b2b6fcb60da",
+            "s": "5e173f3d0e36a5f2c3c5e461c9ac5e3c9e5e9f5e3c5e9e7e5e3e9f2c5e2e8c5d",
+            "v": "1b",
+            "public_key": "4f3b6846489b905e424a3e98d8cb79adc76f14ac5c0a416ffb3ee24bbb4eb7978cc537cdea80f2bab21ef60a8071edf42a690490339623ffbd7ce5a29d14182cee7549fdf3d8e09b6376bcfb86ebb68040699a869b33f889ebe3dbfff7badd49"
+        }
+    }
+    blockchain.add_transaction(transaction)
     assert len(blockchain.current_transactions) == 1
-    assert blockchain.current_transactions[0] == {"sender": "Alice", "recipient": "Bob", "amount": 5}
+    assert blockchain.current_transactions[0] == transaction
+
+
+def test_add_transaction_invalid_sender(blockchain):
+    with pytest.raises(ValueError):
+        blockchain.add_transaction({
+            "type": "transfer",
+            "sender": "",
+            "payload": {
+                "recipient": "Bob",
+                "amount": 5
+            },
+            "nonce": 0,
+            "chain": {
+                "chain_id": "HDC",
+                "version": 1
+            },
+            "gas": {
+                "tip": 1,
+                "max_fee": 1000,
+                "limit": 2000
+            },
+            "signature": {
+                "type": "ECDSA",
+                "r": "7fa6b9a6e0e27e9b9e1e95fc173fbec9f95a2ec3e6a4a12d327e3b2b6fcb60da",
+                "s": "5e173f3d0e36a5f2c3c5e461c9ac5e3c9e5e9f5e3c5e9e7e5e3e9f2c5e2e8c5d",
+                "v": "1b",
+                "public_key": "4f3b6846489b905e424a3e98d8cb79adc76f14ac5c0a416ffb3ee24bbb4eb7978cc537cdea80f2bab21ef60a8071edf42a690490339623ffbd7ce5a29d14182cee7549fdf3d8e09b6376bcfb86ebb68040699a869b33f889ebe3dbfff7badd49"
+            }
+        })
+
+
+def test_proof_of_work(blockchain):
+    last_block = blockchain.chain[-1]
+    proof = blockchain.proof_of_work(last_block)
+    # The proof should be valid for the current difficulty level of the blockchain
+    assert blockchain.valid_proof(last_block.proof, proof, blockchain.difficulty) is True
+
+
+def test_valid_chain(blockchain):
+    blockchain.add_transaction({
+        "type": "transfer",
+        "sender": "Alice",
+        "payload": {
+            "recipient": "Bob",
+            "amount": 5
+        },
+        "nonce": 0,
+        "chain": {
+            "chain_id": "HDC",
+            "version": 1
+        },
+        "gas": {
+            "tip": 1,
+            "max_fee": 1000,
+            "limit": 2000
+        },
+        "signature": {
+            "type": "ECDSA",
+            "r": "7fa6b9a6e0e27e9b9e1e95fc173fbec9f95a2ec3e6a4a12d327e3b2b6fcb60da",
+            "s": "5e173f3d0e36a5f2c3c5e461c9ac5e3c9e5e9f5e3c5e9e7e5e3e9f2c5e2e8c5d",
+            "v": "1b",
+            "public_key": "4f3b6846489b905e424a3e98d8cb79adc76f14ac5c0a416ffb3ee24bbb4eb7978cc537cdea80f2bab21ef60a8071edf42a690490339623ffbd7ce5a29d14182cee7549fdf3d8e09b6376bcfb86ebb68040699a869b33f889ebe3dbfff7badd49"
+        }
+    })
+    last_block = blockchain.chain[-1]
+    proof = blockchain.proof_of_work(last_block)
+    blockchain.add_transaction({
+        "type": "transfer",
+        "sender": "0",
+        "payload": {
+            "recipient": "Devin",
+            "amount": 1
+        },
+        "nonce": 0,
+        "chain": {
+            "chain_id": "HDC",
+            "version": 1
+        },
+        "gas": {
+            "tip": 1,
+            "max_fee": 1000,
+            "limit": 2000
+        },
+        "signature": {
+            "type": "ECDSA",
+            "r": "7fa6b9a6e0e27e9b9e1e95fc173fbec9f95a2ec3e6a4a12d327e3b2b6fcb60da",
+            "s": "5e173f3d0e36a5f2c3c5e461c9ac5e3c9e5e9f5e3c5e9e7e5e3e9f2c5e2e8c5d",
+            "v": "1b",
+            "public_key": "4f3b6846489b905e424a3e98d8cb79adc76f14ac5c0a416ffb3ee24bbb4eb7978cc537cdea80f2bab21ef60a8071edf42a690490339623ffbd7ce5a29d14182cee7549fdf3d8e09b6376bcfb86ebb68040699a869b33f889ebe3dbfff7badd49"
+    })
+    previous_hash = last_block.hash
+    previous_difficulty = last_block.difficulty
+    _new_block = blockchain.create_block(blockchain.current_transactions, previous_hash, proof, previous_difficulty, adjust_diff=False)
+    assert blockchain.valid_chain() is True, "The blockchain should be valid"
+
+
+def test_chain_with_invalid_block(blockchain):
+    blockchain.add_transaction({
+        "type": "transfer",
+        "sender": "Alice",
+        "payload": {
+            "recipient": "Bob",
+            "amount": 5
+        },
+        "nonce": 0,
+        "chain": {
+            "chain_id": "HDC",
+            "version": 1
+        },
+        "gas": {
+            "tip": 1,
+            "max_fee": 1000,
+            "limit": 2000
+        },
+        "signature": {
+            "type": "ECDSA",
+            "r": "7fa6b9a6e0e27e9b9e1e95fc173fbec9f95a2ec3e6a4a12d327e3b2b6fcb60da",
+            "s": "5e173f3d0e36a5f2c3c5e461c9ac5e3c9e5e9f5e3c5e9e7e5e3e9f2c5e2e8c5d",
+            "v": "1b",
+            "public_key": "4f3b6846489b905e424a3e98d8cb79adc76f14ac5c0a416ffb3ee24bbb4eb7978cc537cdea80f2bab21ef60a8071edf42a690490339623ffbd7ce5a29d14182cee7549fdf3d8e09b6376bcfb86ebb68040699a869b33f889ebe3dbfff7badd49"
+        }
+    })  # Added closing parenthesis
+    # Redundant transaction variable removed
+    # This block was redundant and has been removed to clean up the test function
+
+
+def test_add_transaction_invalid_recipient(blockchain):
+    with pytest.raises(ValueError):
+        blockchain.add_transaction(sender="Alice", recipient="", amount=5)
+
+
+def test_add_transaction_invalid_amount(blockchain):
+    with pytest.raises(ValueError):
+        blockchain.add_transaction(sender="Alice", recipient="Bob", amount=-5)
+
+
+def test_proof_of_work(blockchain):
+    last_block = blockchain.chain[-1]
+    proof = blockchain.proof_of_work(last_block)
+    # The proof should be valid for the current difficulty level of the blockchain
+    assert blockchain.valid_proof(last_block.proof, proof, blockchain.difficulty) is True
+
+
+def test_valid_chain(blockchain):
+    blockchain.add_transaction({
+        "type": "transfer",
+        "sender": "Alice",
+        "payload": {
+            "recipient": "Bob",
+            "amount": 5
+        },
+        "nonce": 0,
+        "chain": {
+            "chain_id": "HDC",
+            "version": 1
+        },
+        "gas": {
+            "tip": 1,
+            "max_fee": 1000,
+            "limit": 2000
+        },
+        "signature": {
+            "type": "ECDSA",
+            "r": "7fa6b9a6e0e27e9b9e1e95fc173fbec9f95a2ec3e6a4a12d327e3b2b6fcb60da",
+            "s": "5e173f3d0e36a5f2c3c5e461c9ac5e3c9e5e9f5e3c5e9e7e5e3e9f2c5e2e8c5d",
+            "v": "1b",
+            "public_key": "4f3b6846489b905e424a3e98d8cb79adc76f14ac5c0a416ffb3ee24bbb4eb7978cc537cdea80f2bab21ef60a8071edf42a690490339623ffbd7ce5a29d14182cee7549fdf3d8e09b6376bcfb86ebb68040699a869b33f889ebe3dbfff7badd49"
+        }
+    })
+    blockchain.add_transaction(transaction)
+    assert len(blockchain.current_transactions) == 1
+    assert blockchain.current_transactions[0] == transaction
 
 
 def test_add_transaction_invalid_sender(blockchain):
@@ -55,10 +252,59 @@ def test_proof_of_work(blockchain):
 
 
 def test_valid_chain(blockchain):
-    blockchain.add_transaction(sender="Alice", recipient="Bob", amount=5)
+    blockchain.add_transaction({
+        "type": "transfer",
+        "sender": "Alice",
+        "payload": {
+            "recipient": "Bob",
+            "amount": 5
+        },
+        "nonce": 0,
+        "chain": {
+            "chain_id": "HDC",
+            "version": 1
+        },
+        "gas": {
+            "tip": 1,
+            "max_fee": 1000,
+            "limit": 2000
+        },
+        "signature": {
+            "type": "ECDSA",
+            "r": "7fa6b9a6e0e27e9b9e1e95fc173fbec9f95a2ec3e6a4a12d327e3b2b6fcb60da",
+            "s": "5e173f3d0e36a5f2c3c5e461c9ac5e3c9e5e9f5e3c5e9e7e5e3e9f2c5e2e8c5d",
+            "v": "1b",
+            "public_key": "00"*96
+        }
+    })
     last_block = blockchain.chain[-1]
     proof = blockchain.proof_of_work(last_block)
-    blockchain.add_transaction(sender="0", recipient="Devin", amount=1)
+    blockchain.add_transaction({
+        "type": "transfer",
+        "sender": "0",
+        "payload": {
+            "recipient": "Devin",
+            "amount": 1
+        },
+        "nonce": 0,
+        "chain": {
+            "chain_id": "HDC",
+            "version": 1
+        },
+        "gas": {
+            "tip": 1,
+            "max_fee": 1000,
+            "limit": 2000
+        },
+        "signature": {
+            "type": "ECDSA",
+            "r": "7fa6b9a6e0e27e9b9e1e95fc173fbec9f95a2ec3e6a4a12d327e3b2b6fcb60da",
+            "s": "5e173f3d0e36a5f2c3c5e461c9ac5e3c9e5e9f5e3c5e9e7e5e3e9f2c5e2e8c5d",
+            "v": "1b",
+            "public_key": "4f3b6846489b905e424a3e98d8cb79adc76f14ac5c0a416ffb3ee24bbb4eb7978cc537cdea80f2bab21ef60a8071edf42a690490339623ffbd7ce5a29d14182cee7549fdf3d8e09b6376bcfb86ebb68040699a869b33f889ebe3dbfff7badd49"
+            "public_key": "00"*96
+        }
+    })
     previous_hash = last_block.hash
     previous_difficulty = last_block.difficulty
     _new_block = blockchain.create_block(blockchain.current_transactions, previous_hash, proof, previous_difficulty, adjust_diff=False)
@@ -66,10 +312,58 @@ def test_valid_chain(blockchain):
 
 
 def test_chain_with_invalid_block(blockchain):
-    blockchain.add_transaction(sender="Alice", recipient="Bob", amount=5)
+    blockchain.add_transaction({
+        "type": "transfer",
+        "sender": "Alice",
+        "payload": {
+            "recipient": "Bob",
+            "amount": 5
+        },
+        "nonce": 0,
+        "chain": {
+            "chain_id": "HDC",
+            "version": 1
+        },
+        "gas": {
+            "tip": 1,
+            "max_fee": 1000,
+            "limit": 2000
+        },
+        "signature": {
+            "type": "ECDSA",
+            "r": "00"*32,
+            "s": "00"*32,
+            "v": "00",
+            "public_key": "00"*96
+        }
+    })
     last_block = blockchain.chain[-1]
     proof = blockchain.proof_of_work(last_block)
-    blockchain.add_transaction(sender="0", recipient="Devin", amount=1)
+    blockchain.add_transaction({
+        "type": "transfer",
+        "sender": "0",
+        "payload": {
+            "recipient": "Devin",
+            "amount": 1
+        },
+        "nonce": 0,
+        "chain": {
+            "chain_id": "HDC",
+            "version": 1
+        },
+        "gas": {
+            "tip": 1,
+            "max_fee": 1000,
+            "limit": 2000
+        },
+        "signature": {
+            "type": "ECDSA",
+            "r": "00"*32,
+            "s": "00"*32,
+            "v": "00",
+            "public_key": "00"*96
+        }
+    })
     previous_hash = last_block.hash
     previous_difficulty = last_block.difficulty
     block = blockchain.create_block(blockchain.current_transactions, previous_hash, previous_difficulty, proof)
@@ -82,7 +376,31 @@ def test_difficulty_adjustment_with_fewer_than_10_blocks(blockchain):
     for i in range(9):
         last_block = blockchain.chain[-1]
         proof = blockchain.proof_of_work(last_block)
-        blockchain.add_transaction(sender="0", recipient="Devin", amount=1)
+        blockchain.add_transaction({
+            "type": "transfer",
+            "sender": "0",
+            "payload": {
+                "recipient": "Devin",
+                "amount": 1
+            },
+            "nonce": 0,
+            "chain": {
+                "chain_id": "HDC",
+                "version": 1
+            },
+            "gas": {
+                "tip": 1,
+                "max_fee": 1000,
+                "limit": 2000
+            },
+            "signature": {
+                "type": "ECDSA",
+                "r": "00"*32,
+                "s": "00"*32,
+                "v": "00",
+                "public_key": "4f3b6846489b905e424a3e98d8cb79adc76f14ac5c0a416ffb3ee24bbb4eb7978cc537cdea80f2bab21ef60a8071edf42a690490339623ffbd7ce5a29d14182cee7549fdf3d8e09b6376bcfb86ebb68040699a869b33f889ebe3dbfff7badd49"
+            }
+        })
         previous_hash = last_block.hash
         previous_difficulty = last_block.difficulty
         blockchain.create_block(blockchain.current_transactions, previous_hash, previous_difficulty, proof)
@@ -94,7 +412,31 @@ def test_difficulty_increases(blockchain):
     for i in range(10):
         last_block = blockchain.chain[-1]
         proof = blockchain.proof_of_work(last_block)
-        blockchain.add_transaction(sender="0", recipient="Devin", amount=1)
+        blockchain.add_transaction({
+            "type": "transfer",
+            "sender": "0",
+            "payload": {
+                "recipient": "Devin",
+                "amount": 1
+            },
+            "nonce": 0,
+            "chain": {
+                "chain_id": "HDC",
+                "version": 1
+            },
+            "gas": {
+                "tip": 1,
+                "max_fee": 1000,
+                "limit": 2000
+            },
+            "signature": {
+                "type": "ECDSA",
+                "r": "00"*32,
+                "s": "00"*32,
+                "v": "00",
+                "public_key": "4f3b6846489b905e424a3e98d8cb79adc76f14ac5c0a416ffb3ee24bbb4eb7978cc537cdea80f2bab21ef60a8071edf42a690490339623ffbd7ce5a29d14182cee7549fdf3d8e09b6376bcfb86ebb68040699a869b33f889ebe3dbfff7badd49"
+            }
+        })
         previous_hash = last_block.hash
         previous_difficulty = last_block.difficulty
         new_timestamp = last_block.timestamp + 5
@@ -110,7 +452,31 @@ def test_difficulty_decreases(blockchain):
     for i in range(10):
         last_block = blockchain.chain[-1]
         proof = blockchain.proof_of_work(last_block)
-        blockchain.add_transaction(sender="0", recipient="Devin", amount=1)
+        blockchain.add_transaction({
+            "type": "transfer",
+            "sender": "0",
+            "payload": {
+                "recipient": "Devin",
+                "amount": 1
+            },
+            "nonce": 0,
+            "chain": {
+                "chain_id": "HDC",
+                "version": 1
+            },
+            "gas": {
+                "tip": 1,
+                "max_fee": 1000,
+                "limit": 2000
+            },
+            "signature": {
+                "type": "ECDSA",
+                "r": "00"*32,
+                "s": "00"*32,
+                "v": "00",
+                "public_key": "4f3b6846489b905e424a3e98d8cb79adc76f14ac5c0a416ffb3ee24bbb4eb7978cc537cdea80f2bab21ef60a8071edf42a690490339623ffbd7ce5a29d14182cee7549fdf3d8e09b6376bcfb86ebb68040699a869b33f889ebe3dbfff7badd49"
+            }
+        })
         previous_hash = last_block.hash
         previous_difficulty = last_block.difficulty
         new_timestamp = blockchain.chain[-1].timestamp + 20
