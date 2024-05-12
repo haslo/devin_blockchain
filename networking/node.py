@@ -1,8 +1,14 @@
 import socket
 import threading
 import json
+import logging
 from blockchain.blockchain import Blockchain
+from blockchain.block import Block
 
+# Initialize logging configuration
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    handlers=[logging.FileHandler('node.log'), logging.StreamHandler()])
 
 class Node:
     def __init__(self, port, bootstrap_node=None):
@@ -29,7 +35,7 @@ class Node:
                 # Add the node to the nodes set
                 self.add_node(node_info)
         except Exception as e:
-            print(f"Connection to {node_info} failed: {e}")
+            logging.error(f"Connection to {node_info} failed: {e}")
 
     def add_node(self, node_info):
         # Add a new node to the list of nodes
@@ -45,13 +51,9 @@ class Node:
         for node in self.nodes:
             try:
                 with socket.create_connection(node) as sock:
-                    print('---')
-                    print(sock)
-                    print('---')
-                    print(json.dumps(block).encode('utf-8'))
                     sock.sendall(json.dumps(block).encode('utf-8'))
             except Exception as e:
-                print(f"Failed to send block to {node}: {e}")
+                logging.error(f"Failed to send block to {node}: {e}")
 
     def receive_block(self, block):
         # Handle receiving a block
@@ -79,19 +81,19 @@ class Node:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
             server_socket.bind((self.host, self.port))
             server_socket.listen()
-            print(f"Node server listening on port {self.port}")
+            logging.info(f"Node server listening on port {self.port}")
 
             try:
                 while self.server_running:
                     client_socket, client_address = server_socket.accept()
-                    print(f"Accepted connection from {client_address}")
+                    logging.info(f"Accepted connection from {client_address}")
                     client_handler = threading.Thread(
                         target=self.handle_client_connection,
                         args=(client_socket, client_address)
                     )
                     client_handler.start()
             except Exception as e:
-                print(f"Server error: {e}")
+                logging.error(f"Server error: {e}")
             finally:
                 server_socket.close()
 
@@ -104,20 +106,90 @@ class Node:
                         break
                     try:
                         message = json.loads(data.decode('utf-8'))
-                        # protocol not yet implemented, these are placeholder handlers
+                        # Handle different message types based on protocol
                         if message['type'] == 'new_transaction':
                             self.handle_new_transaction(message['transaction'])
                         elif message['type'] == 'new_block':
                             self.receive_block(message['block'])
+                        elif message['type'] == 'block_broadcast':
+                            self.handle_block_broadcast(message)
+                        elif message['type'] == 'transaction_broadcast':
+                            self.handle_transaction_broadcast(message)
                     except json.JSONDecodeError as e:
-                        print(f"Invalid JSON received from {client_address}: {e}")
+                        logging.error(f"Invalid JSON received from {client_address}: {e}")
                     except KeyError as e:
-                        print(f"Missing key in message from {client_address}: {e}")
+                        logging.error(f"Missing key in message from {client_address}: {e}")
             except Exception as e:
-                print(f"Error handling client {client_address}: {e}")
+                logging.error(f"Error handling client {client_address}: {e}")
 
     def stop_server(self):
         if self.server_thread:
             self.server_running = False
             self.server_thread.join()
-            print("Node server stopped.")
+            logging.info("Node server stopped.")
+
+    def handle_block_broadcast(self, message):
+        # Handle a block broadcast message
+        # Validate and add block to blockchain
+        block_data = message['block']
+        block = Block(
+            index=block_data['index'],
+            transactions=block_data['transactions'],
+            previous_hash=block_data['previous_hash'],
+            proof=block_data['proof'],
+            difficulty=block_data['difficulty'],
+            timestamp=block_data['timestamp']
+        )
+        if self.blockchain.validate_block(block):
+            self.blockchain.add_block(block)
+            logging.info(f"Block {block.index} added to the blockchain")
+            self.broadcast_block(block)  # Re-broadcast the block if needed
+        else:
+            logging.warning(f"Received invalid block {block.index}")
+
+    def handle_transaction_broadcast(self, message):
+        # Handle a transaction broadcast message
+        # Validate and add transaction to mempool
+        transaction = message['transaction']
+        sender = transaction['sender']
+        recipient = transaction['payload']['recipient']
+        amount = transaction['payload']['amount']
+        if self.blockchain.validate_transaction(sender, recipient, amount):
+            self.mempool.append(transaction)
+            self.broadcast_transaction(transaction)  # Re-broadcast the transaction if needed
+
+    def broadcast_transaction(self, transaction):
+        # Broadcast a transaction to all connected nodes
+        for node in self.nodes:
+            try:
+                with socket.create_connection(node) as sock:
+                    sock.sendall(json.dumps(transaction).encode('utf-8'))
+            except Exception as e:
+                logging.error(f"Failed to send transaction to {node}: {e}")
+
+    def handle_find_nodes(self, message):
+        # Handle a find_nodes message
+        # Attempt to connect to the new node and share known nodes
+        new_node_info = (message['node']['address'], message['node']['port'])
+        self.connect_to_node(new_node_info)
+        self.broadcast_nodes()
+
+    def handle_propagate_nodes(self, message):
+        # Handle a propagate_nodes message
+        # Update the node's list of known nodes with the new information
+        for node_info in message['nodes']:
+            self.add_node((node_info['address'], node_info['port']))
+
+    def broadcast_nodes(self):
+        # Broadcast the list of known nodes to all connected nodes
+        nodes_info = [{'address': node[0], 'port': node[1]} for node in self.nodes]
+        message = {
+            'type': 'propagate_nodes',
+            'nodes': nodes_info
+        }
+        for node in self.nodes:
+            try:
+                with socket.create_connection(node) as sock:
+                    sock.sendall(json.dumps(message).encode('utf-8'))
+            except Exception as e:
+                logging.error(f"Failed to broadcast nodes to {node}: {e}")

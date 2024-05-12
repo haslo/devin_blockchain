@@ -152,6 +152,30 @@ class Blockchain:
 
         self.logger.info(f"Difficulty adjusted to {self.difficulty}. Average block time: {average_block_time:.2f}s")
 
+    def validate_block(self, block):
+        """
+        Validates a block by checking its hash, the proof of work, and the previous hash.
+        :param block: The block to validate.
+        :return: True if the block is valid, False otherwise.
+        """
+        # Check if the block's hash is correct
+        if block.hash != block.compute_hash():
+            self.logger.error(f"Invalid block: Computed hash does not match the block's hash.")
+            return False
+
+        # Check if the block's proof of work meets the difficulty criteria
+        last_block_proof = self.last_block.proof if self.last_block else 0
+        if not self.valid_proof(last_block_proof, block.proof, block.difficulty):
+            self.logger.error(f"Invalid block: Proof of work does not meet difficulty criteria.")
+            return False
+
+        # Check if the block's previous hash matches the last block's hash
+        if self.chain and block.previous_hash != self.last_block.hash:
+            self.logger.error(f"Invalid block: Previous hash does not match the last block's hash.")
+            return False
+
+        return True
+
     def valid_chain(self):
         """
         Determine if a given blockchain is valid.
