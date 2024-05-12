@@ -73,62 +73,13 @@ class Blockchain:
     def add_block(self, block):
         self.chain.append(block)
 
-
-    def validate_transaction(self, transaction):
-        """
-        Validates a transaction to ensure it follows the new protocol structure and that the signature is valid.
-        :param transaction: The transaction to validate.
-        :raise ValueError: If the transaction is invalid.
-        """
-        required_fields = ["type", "sender", "payload", "nonce", "chain", "gas", "signature"]
-        for field in required_fields:
-            if field not in transaction:
-                raise ValueError(f"Transaction is missing required field: {field}")
-
-        # Validate payload structure
-        if not isinstance(transaction['payload'], dict) or "recipient" not in transaction['payload'] or "amount" not in transaction['payload']:
-            raise ValueError("Invalid payload structure")
-
-        # Validate nonce
-        if not isinstance(transaction['nonce'], int) or transaction['nonce'] < 0:
-            raise ValueError("Invalid nonce")
-
-        # Validate gas structure and values
-        if not isinstance(transaction['gas'], dict) or "tip" not in transaction['gas'] or "max_fee" not in transaction['gas'] or "limit" not in transaction['gas']:
-            raise ValueError("Invalid gas structure")
-        if any(not isinstance(transaction['gas'][key], int) or transaction['gas'][key] < 0 for key in ["tip", "max_fee", "limit"]):
-            raise ValueError("Invalid gas values")
-
-        # Validate signature structure and values
-        if not isinstance(transaction['signature'], dict) or "type" not in transaction['signature'] or "r" not in transaction['signature'] or "s" not in transaction['signature'] or "v" not in transaction['signature'] or "public_key" not in transaction['signature']:
-            raise ValueError("Invalid signature structure")
-
-        # Assuming validate_signature is a method to be implemented
-        if not self.validate_signature(transaction):
-            raise ValueError("Invalid signature")
-
-    def validate_signature(self, transaction):
-        """
-        Validates the signature of a transaction.
-        :param transaction: The transaction with the signature to validate.
-        :return: True if the signature is valid, False otherwise.
-        """
-        signature = transaction['signature']
-        message = json.dumps(transaction, sort_keys=True).encode()
-        try:
-            vk = VerifyingKey.from_string(bytes.fromhex(signature['public_key']), curve=NIST384p)
-            vk.verify(bytes.fromhex(signature['r'] + signature['s']), message)
-            return True
-        except BadSignatureError:
-            return False
-
     def add_transaction(self, transaction):
         """
         Adds a new transaction to the list of transactions after validating it.
         :param transaction: The transaction dictionary.
         """
         # Validate the transaction
-        self.validate_transaction(transaction)
+        transaction.validate_transaction()
         # If the transaction is valid, add it to the list of current transactions
         self.current_transactions.append(transaction)
 
