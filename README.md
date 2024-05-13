@@ -1,6 +1,10 @@
-# Devin Blockchain
+# Blockchain WIP
 
-A simple blockchain implementation in Python to demonstrate the core concepts of blockchain technology.
+The Developer's Blockchain.
+
+Implementation in Pythonm, assisted by [Devin](https://www.cognition.ai/introducing-devin).
+
+Work in Progress. I'll let you know if / when that changes.
 
 ## Overview
 
@@ -58,6 +62,12 @@ The blockchain includes a proof-of-work algorithm for mining new blocks. To mine
 ## Node Communication Protocol
 
 For details on the node communication protocol used in the Devin Blockchain, see the [protocol.md](protocol.md) file.
+
+# Meta
+
+## Contributing
+
+At the moment, I'm still building the basics. Contributions don't really make sense yet.
 
 ## License
 
