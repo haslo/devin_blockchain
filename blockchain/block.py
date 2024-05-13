@@ -33,7 +33,7 @@ class Block:
         block_string = json.dumps({
             'index': self.index,
             'timestamp': self.timestamp,
-            'transactions': self.transactions,
+            'transactions': [transaction.to_dict() for transaction in self.transactions],
             'previous_hash': self.previous_hash,
             'proof': self.proof,
             'difficulty': self.difficulty
