@@ -2,7 +2,7 @@
 
 The Developer's Blockchain.
 
-Implementation in Pythonm, assisted by [Devin](https://www.cognition.ai/introducing-devin).
+Implementation in Python, assisted by [Devin](https://www.cognition.ai/introducing-devin).
 
 Work in Progress. I'll let you know if / when that changes.
 
