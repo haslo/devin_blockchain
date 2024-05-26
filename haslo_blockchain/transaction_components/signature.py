@@ -9,9 +9,18 @@ class Signature:
     @classmethod
     def from_dict(cls, signature_dict):
         return cls(
-            signature_type=signature_dict['signature_type'],
+            signature_type=signature_dict['type'],
             r=signature_dict['r'],
             s=signature_dict['s'],
             v=signature_dict['v'],
             public_key=signature_dict['public_key'],
         )
+
+    def to_dict(self):
+        return {
+            'type': self.signature_type,
+            'r': self.r,
+            's': self.s,
+            'v': self.v,
+            'public_key': self.public_key,
+        }

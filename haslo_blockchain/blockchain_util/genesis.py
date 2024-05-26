@@ -20,6 +20,6 @@ class Genesis:
         return Blockchain(
             self.difficulty,
             [
-                cls.create_genesis_block(self.difficulty),
+                self.create_genesis_block(),
             ]
         )

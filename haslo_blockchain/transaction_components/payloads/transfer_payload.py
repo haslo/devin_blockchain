@@ -9,3 +9,9 @@ class TransferPayload:
             recipient=payload_dict['recipient'],
             amount=payload_dict['amount'],
         )
+
+    def to_dict(self):
+        return {
+            'recipient': self.recipient,
+            'amount': self.amount,
+        }

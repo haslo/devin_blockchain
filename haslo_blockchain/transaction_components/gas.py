@@ -11,3 +11,10 @@ class Gas:
             max_fee=gas_dict['max_fee'],
             limit=gas_dict['limit'],
         )
+
+    def to_dict(self):
+        return {
+            'tip': self.tip,
+            'max_fee': self.max_fee,
+            'limit': self.limit,
+        }

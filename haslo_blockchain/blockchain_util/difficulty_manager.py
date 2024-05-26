@@ -1,5 +1,3 @@
-# TODO this does nothing, collection of methods that were IN THE WRONG PLACE FFS DEVIN
-
 class DifficultyManager:
     DEFAULT_TARGET_BLOCK_TIME = 10
 

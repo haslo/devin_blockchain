@@ -62,16 +62,24 @@ These types are wrappers for other types with added data:
 
 Batch transactions can support different rollback mechanisms (or explicit lack thereof).
 
-### Signing
+## Signatures
 
-_R_ and _S_ are used for ECDSA signatures.
+ECDSA signatures are used, like for ETH. Details to follow.
 
 ## Node Communication Protocol
 
-This document outlines the protocol for inter-node communication within the blockchain network. The protocol is designed to be simple, extensible, and JSON-based to facilitate easy parsing and generation by nodes written in any language that supports JSON.
+The inter-node protocol is designed to be simple, extensible, and JSON-based to facilitate easy parsing and generation.
+Nodes can be written in any language that supports JSON.
 
 ### Message Types
 
+These message types must be supported:
+
+* `block_broadcast`
+* `transaction_broadcast`
+* `find_nodes`
+* `propagate_nodes`
+s
 #### Block Broadcast
 
 When a new block is mined, it is broadcast to all nodes in the network using the following message format:
@@ -88,7 +96,7 @@ When a new block is mined, it is broadcast to all nodes in the network using the
       "transaction",
       "transaction",
       "transaction"
-    ]
+    ],
     "proof": 35293,
     "previous_hash": "hash_of_previous_block"
   },
@@ -102,7 +110,7 @@ When a new block is mined, it is broadcast to all nodes in the network using the
 }
 ```
 
-Note that the transactions follow the transacation spec from earlier in this document.
+Note that the transactions follow the transaction spec from earlier in this document.
 
 #### Transaction Broadcast
 
@@ -113,15 +121,7 @@ When a new transaction is created, it is broadcast to all nodes in the network u
   "type": "transaction_broadcast",
   "uuid": "uuid",
   "version": 1,
-  "transaction":
-  {
-    "type": "transfer",
-    "payload": {
-      "sender": "sender_public_key",
-      "recipient": "recipient_public_key",
-      "amount": 123
-    }
-  },
+  "transaction": "transaction",
   "signature": {
     "type": "ECDSA",
     "r": "r_value",
@@ -132,7 +132,7 @@ When a new transaction is created, it is broadcast to all nodes in the network u
 }
 ```
 
-Note that the transaction follows the transacation spec from earlier in this document.
+Note that the transaction follows the transaction spec from earlier in this document.
 
 #### Find Nodes
 
@@ -157,6 +157,8 @@ Nodes can discover other nodes in the network using the following message format
   }
 }
 ```
+
+This includes the node's own (redundant) address and (non redundant) public key, for the node that wants to receive node data.
 
 #### Propagate Nodes
 
@@ -186,6 +188,9 @@ A node can answer a find_nodes message or want to propagate itself with this mes
   }
 }
 ```
+
+The node format is identical to the `find_nodes` message's, but propagating the sending node itself does not make sense since the
+recipient already has an open socket with it. Nodes are expected to send a sample of their most trustworthy peers.
 
 ### Handling Messages
 
@@ -229,12 +234,14 @@ Once the blockchain goes live, all node communication must be TLS encrypted and 
 This signature structure:
 
 ```json
-"signature": {
-  "type": "ECDSA",
-  "r": "r_value",
-  "s": "s_value",
-  "v": "recovery_id",
-  "public_key": "public_key"
+{
+  "signature": {
+    "type": "ECDSA",
+    "r": "r_value",
+    "s": "s_value",
+    "v": "recovery_id",
+    "public_key": "public_key"
+  }
 }
 ```
 

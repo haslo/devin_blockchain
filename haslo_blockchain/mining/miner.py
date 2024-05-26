@@ -1,7 +1,7 @@
 import random
 
 
-# TODO this does nothing, collection of methods that were IN THE WRONG PLACE FFS DEVIN
+# TODO this does nothing, make it do something
 
 class Miner:
     @staticmethod
