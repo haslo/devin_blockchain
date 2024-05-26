@@ -20,7 +20,7 @@ class Genesis:
             timestamp,
             None,
         )
-        block.hash = Hashing.compute_block_hash(block)
+        block.current_hash = Hashing.compute_block_hash(block)
         return block
 
 

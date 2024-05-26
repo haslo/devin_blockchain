@@ -22,12 +22,12 @@ class Blockchain:
         self.chain.append(block)
 
     def validate_block(self, block):
-        if block.hash != block.compute_hash():
+        if block.current_hash != block.compute_hash():
             return False
         last_block_proof = self.last_block.proof if self.last_block else 0
         if not self.valid_proof(last_block_proof, block.proof, block.difficulty):
             return False
-        if self.chain and block.previous_hash != self.last_block.hash:
+        if self.chain and block.previous_hash != self.last_block.current_hash:
             return False
         return True
 
@@ -47,9 +47,9 @@ class Blockchain:
             previous_block = self.chain[i - 1]
             current_block = self.chain[i]
             current_computed_hash = current_block.compute_hash()
-            if current_block.hash != current_computed_hash:
+            if current_block.current_hash != current_computed_hash:
                 return False
-            if current_block.previous_hash != previous_block.hash:
+            if current_block.previous_hash != previous_block.current_hash:
                 return False
             block_difficulty = current_block.difficulty
             if not self.valid_proof(previous_block.proof, current_block.proof, block_difficulty):

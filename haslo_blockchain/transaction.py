@@ -4,8 +4,6 @@ from haslo_blockchain.transaction_components.signature import Signature
 
 
 class Transaction:
-    TYPE_TRANSFER = 'transfer'
-
     def __init__(self, transaction_type, sender, payload, nonce, chain_id, gas, signature):
         self.transaction_type = transaction_type
         self.sender = sender
