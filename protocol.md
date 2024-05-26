@@ -24,7 +24,7 @@ This is the most common and basic transaction type.
     "amount": 123
   },
   "nonce": 1,
-  "chain": {
+  "chain_id": {
     "chain_id": "dhc",
     "version": 1
   },

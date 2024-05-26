@@ -6,12 +6,12 @@ from haslo_blockchain.transaction_components.signature import Signature
 class Transaction:
     TYPE_TRANSFER = 'transfer'
 
-    def __init__(self, transaction_type, sender, payload, nonce, chain, gas, signature):
+    def __init__(self, transaction_type, sender, payload, nonce, chain_id, gas, signature):
         self.transaction_type = transaction_type
         self.sender = sender
         self.payload = Payload.from_type_and_dict(transaction_type, payload)
         self.nonce = nonce
-        self.chain = chain
+        self.chain_id = chain_id
         self.gas = Gas.from_dict(gas)
         self.signature = Signature.from_dict(signature)
 
@@ -22,7 +22,7 @@ class Transaction:
             sender=data['sender'],
             payload=data['payload'],
             nonce=data['nonce'],
-            chain=data['chain'],
+            chain_id=data['chain_id'],
             gas=data['gas'],
             signature=data['signature'],
         )
@@ -31,9 +31,9 @@ class Transaction:
         return {
             "type": self.transaction_type,
             "sender": self.sender,
-            "payload": self.payload,
+            "payload": self.payload.to_dict(),
             "nonce": self.nonce,
-            "chain": self.chain,
-            "gas": self.gas,
-            "signature": self.signature
+            "chain_id": self.chain_id.to_dict(),
+            "gas": self.gas.to_dict(),
+            "signature": self.signature.to_dict(),
         }

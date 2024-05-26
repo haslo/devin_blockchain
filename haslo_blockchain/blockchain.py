@@ -1,7 +1,7 @@
 import hashlib
 
 from haslo_blockchain.block import Block
-from haslo_blockchain.blockchain_util.difficulty_manager import DifficultyManager
+from haslo_blockchain.util.difficulty_manager import DifficultyManager
 
 
 class Blockchain:
