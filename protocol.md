@@ -1,5 +1,7 @@
 # Protocol
 
+This is the high-level protocol, JSON layer. There is also a [low-level protocol spec](lowlevel_protocol.md).
+
 ## Transactions
 
 Each transaction is a json structure with the following two keys:
@@ -79,7 +81,7 @@ These message types must be supported:
 * `transaction_broadcast`
 * `find_nodes`
 * `propagate_nodes`
-s
+
 #### Block Broadcast
 
 When a new block is mined, it is broadcast to all nodes in the network using the following message format:
@@ -213,6 +215,25 @@ More message types will be defined during development. Probably:
 * pong
 * reject
 
+#### Message Type Codes
+
+For the low level protocol:
+
+| Type                  | Code |
+|-----------------------|------|
+| ack                   | 0x01 |
+| find_nodes            | 0xa1 |
+| propagate_nodes       | 0xa2 |
+| transaction_broadcast | 0xa3 |
+| block_broadcast       | 0xa4 |
+| get_blocks            | 0xb1 |
+| get_data              | 0xb2 |
+| ping                  | 0xc1 |
+| pong                  | 0xc2 |
+| version               | 0xf1 |
+| version_ack           | 0xf2 |
+| reject                | 0xf8 |
+
 ### Future Extensions
 
 These will be defined when they are necessary (before the release of the blockchain, but not right now).
@@ -220,14 +241,6 @@ These will be defined when they are necessary (before the release of the blockch
 #### Gossip Protocol
 
 In the future, a gossip protocol will be added. The above message types are ready for that and the protocol will mostly impact which nodes propagate what to which other nodes.
-
-#### Consensus Messages
-
-These are currently not needed, as the blockchain starts out as POW. They could be added when the network moves to another consensus mechanism.
-
-#### Network Security & Efficiency
-
-Once the blockchain goes live, all node communication must be TLS encrypted and compressed. This is not true while it is in development.
 
 ## Signatures
 
