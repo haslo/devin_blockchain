@@ -25,11 +25,6 @@ class Block:
         return hashlib.sha256(block_string.encode()).hexdigest()
 
     def __eq__(self, other):
-        """
-        Overloads the equality operator to compare two Block instances.
-        :param other: The other Block instance to compare with.
-        :return: True if both instances have the same index, timestamp, transactions, previous_hash, proof, difficulty, and hash, False otherwise.
-        """
         return (self.index == other.index and
                 self.timestamp == other.timestamp and
                 self.transactions == other.transactions and
@@ -37,15 +32,3 @@ class Block:
                 self.proof == other.proof and
                 self.difficulty == other.difficulty and
                 self.hash == other.hash)
-
-    def __repr__(self):
-        """
-        A function to print out the block contents in a readable format.
-        """
-        return (f"Block("
-                f"index={self.index}, "
-                f"timestamp={self.timestamp}, "
-                f"transactions={self.transactions}, "
-                f"previous_hash={self.previous_hash}, "
-                f"difficulty={self.difficulty}, "
-                f"hash={self.hash})")

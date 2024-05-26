@@ -1,5 +1,5 @@
-from blockchain.transaction import Transaction
-from blockchain.transaction_components.payloads.transfer_payload import TransferPayload
+from haslo_blockchain.transaction import Transaction
+from haslo_blockchain.transaction_components.payloads.transfer_payload import TransferPayload
 
 
 class Payload:

@@ -1,9 +1,7 @@
-from blockchain.transaction_components.gas import Gas
-from blockchain.transaction_components.payload import Payload
-from blockchain.transaction_components.signature import Signature
+from haslo_blockchain.transaction_components.gas import Gas
+from haslo_blockchain.transaction_components.payload import Payload
+from haslo_blockchain.transaction_components.signature import Signature
 
-
-# TODO add validation, but ffs without Devin's utter BS
 
 class Transaction:
     TYPE_TRANSFER = 'transfer'
@@ -30,7 +28,6 @@ class Transaction:
         )
 
     def to_dict(self):
-        self.validate_transaction()
         return {
             "type": self.transaction_type,
             "sender": self.sender,
