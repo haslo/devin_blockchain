@@ -25,7 +25,7 @@ This is the most common and basic transaction type.
   },
   "nonce": 1,
   "chain_id": {
-    "chain_id": "dhc",
+    "chain_id": "main",
     "version": 1
   },
   "gas": {
