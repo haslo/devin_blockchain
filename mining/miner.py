@@ -1,6 +1,4 @@
 import hashlib
-import json
-from time import time
 
 
 class Miner:

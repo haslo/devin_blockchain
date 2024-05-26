@@ -1,25 +1,12 @@
 import hashlib
-import json
-from ecdsa import VerifyingKey, BadSignatureError, NIST384p
 import random
 from blockchain.block import Block
-from util.logger import Logger
 
 
 class Blockchain:
-    """
-    The Blockchain class is a wrapper around the chain of blocks and includes methods to add and validate blocks.
-    """
-
     def __init__(self, chain=None):
-        """
-        The constructor for the `Blockchain` class.
-        :param chain: An optional list of blocks to initialize the blockchain with.
-        """
         self.current_transactions = []
-        self.difficulty = 4  # Default difficulty level of 4 leading zeroes
-        self.test_mode = False  # Test mode is off by default
-        self.logger = Logger()
+        self.difficulty = 4
         if chain is not None:
             self.chain = chain
             self.logger.info(f"Initializing Blockchain with provided chain: {self.chain}")

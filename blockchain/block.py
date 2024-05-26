@@ -4,20 +4,7 @@ import time
 
 
 class Block:
-    """
-    A Block represents each 'item' in the blockchain.
-    """
-
     def __init__(self, index, transactions, previous_hash, proof, difficulty, timestamp=None):
-        """
-        Constructor for the `Block` class.
-        :param index: Unique ID of the block.
-        :param transactions: List of transactions.
-        :param previous_hash: Hash of the previous block in the chain.
-        :param proof: The proof of work for this block.
-        :param difficulty: The difficulty level at which the block was mined.
-        :param timestamp: The timestamp when the block is created. Defaults to current time if not provided.
-        """
         self.index = index
         self.timestamp = int(timestamp if timestamp is not None else time.time())
         self.transactions = transactions
@@ -27,9 +14,6 @@ class Block:
         self.hash = self.compute_hash()
 
     def compute_hash(self):
-        """
-        A function that return the hash of the block contents.
-        """
         block_string = json.dumps({
             'index': self.index,
             'timestamp': self.timestamp,
