@@ -21,3 +21,28 @@ class TestBlock(unittest.TestCase):
         self.assertEqual(block.difficulty, 'difficulty')
         self.assertEqual(block.timestamp, 'timestamp')
         self.assertEqual(block.current_hash, 'current_hash')
+
+    def test_equality(self):
+        block1 = Block(
+            'index',
+            'transactions',
+            'previous_hash',
+            'proof',
+            'difficulty',
+            'timestamp',
+            'current_hash',
+        )
+        block2 = Block(
+            'index',
+            'transactions',
+            'previous_hash',
+            'proof',
+            'difficulty',
+            'timestamp',
+            'current_hash',
+        )
+        self.assertEqual(block1, block2)
+
+
+if __name__ == '__main__':
+    unittest.main()
