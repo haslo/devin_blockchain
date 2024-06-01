@@ -31,7 +31,7 @@ class Transaction:
             "sender": self.sender,
             "payload": self.payload.to_dict(),
             "nonce": self.nonce,
-            "chain_id": self.chain_id.to_dict(),
+            "chain_id": self.chain_id,
             "gas": self.gas.to_dict(),
             "signature": self.signature.to_dict(),
         }
