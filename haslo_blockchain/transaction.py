@@ -1,3 +1,4 @@
+from haslo_blockchain.transaction_components.chain_id import ChainId
 from haslo_blockchain.transaction_components.gas import Gas
 from haslo_blockchain.transaction_components.payload import Payload
 from haslo_blockchain.transaction_components.signature import Signature
@@ -9,7 +10,7 @@ class Transaction:
         self.sender = sender
         self.payload = Payload.from_type_and_dict(transaction_type, payload)
         self.nonce = nonce
-        self.chain_id = chain_id
+        self.chain_id = ChainId.from_dict(chain_id)
         self.gas = Gas.from_dict(gas)
         self.signature = Signature.from_dict(signature)
 
@@ -31,7 +32,7 @@ class Transaction:
             "sender": self.sender,
             "payload": self.payload.to_dict(),
             "nonce": self.nonce,
-            "chain_id": self.chain_id,
+            "chain_id": self.chain_id.to_dict(),
             "gas": self.gas.to_dict(),
             "signature": self.signature.to_dict(),
         }

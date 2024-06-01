@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import Mock
 from haslo_blockchain.mining.miner import Miner
 
+
 class TestMiner(unittest.TestCase):
     def test_proof_of_work(self):
         # Create a mock blockchain with a valid_proof method
@@ -18,6 +19,7 @@ class TestMiner(unittest.TestCase):
 
         # Verify that the proof is valid
         self.assertTrue(mock_blockchain.valid_proof(mock_last_block.proof, proof, mock_blockchain.difficulty))
+
 
 if __name__ == '__main__':
     unittest.main()

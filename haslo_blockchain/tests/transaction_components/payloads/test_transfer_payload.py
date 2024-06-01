@@ -1,6 +1,7 @@
 import unittest
 from haslo_blockchain.transaction_components.payloads.transfer_payload import TransferPayload
 
+
 class TestTransferPayload(unittest.TestCase):
     def test_transfer_payload_initialization(self):
         payload = TransferPayload(recipient="recipient_address", amount=100)
@@ -24,6 +25,7 @@ class TestTransferPayload(unittest.TestCase):
             "amount": 100
         }
         self.assertEqual(payload_dict, expected_dict)
+
 
 if __name__ == '__main__':
     unittest.main()

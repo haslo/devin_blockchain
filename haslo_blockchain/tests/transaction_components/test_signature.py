@@ -1,6 +1,7 @@
 import unittest
 from haslo_blockchain.transaction_components.signature import Signature
 
+
 class TestSignature(unittest.TestCase):
     def test_signature_initialization(self):
         signature = Signature(signature_type="type", r="r_value", s="s_value", v="v_value", public_key="public_key_value")
@@ -36,6 +37,7 @@ class TestSignature(unittest.TestCase):
             "public_key": "public_key_value"
         }
         self.assertEqual(signature_dict, expected_dict)
+
 
 if __name__ == '__main__':
     unittest.main()

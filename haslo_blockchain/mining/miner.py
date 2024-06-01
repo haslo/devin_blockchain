@@ -1,8 +1,6 @@
 import random
 
 
-# TODO this does nothing, make it do something
-
 class Miner:
     @staticmethod
     def proof_of_work(blockchain, last_block):

@@ -4,9 +4,11 @@ from haslo_blockchain.transaction_components.payloads.transfer_payload import Tr
 from haslo_blockchain.transaction_components.signature import Signature
 from haslo_blockchain.transaction_components.gas import Gas
 
+
 class TestTransaction(unittest.TestCase):
     def test_initialization(self):
         payload = {"recipient": "recipient_address", "amount": 100}
+        chain_id = {"chain_id": 1, "version": 1}
         gas = {"tip": 10, "max_fee": 50, "limit": 21000}
         signature = {"type": "type", "v": 27, "r": "r_value", "s": "s_value", "public_key": "public_key"}
         transaction = Transaction(
@@ -14,7 +16,7 @@ class TestTransaction(unittest.TestCase):
             sender="sender_address",
             payload=payload,
             nonce=1,
-            chain_id=1,
+            chain_id=chain_id,
             gas=gas,
             signature=signature
         )
@@ -23,7 +25,8 @@ class TestTransaction(unittest.TestCase):
         self.assertEqual(transaction.payload.recipient, "recipient_address")
         self.assertEqual(transaction.payload.amount, 100)
         self.assertEqual(transaction.nonce, 1)
-        self.assertEqual(transaction.chain_id, 1)
+        self.assertEqual(transaction.chain_id.chain_id, 1)
+        self.assertEqual(transaction.chain_id.version, 1)
         self.assertEqual(transaction.gas.tip, 10)
         self.assertEqual(transaction.gas.max_fee, 50)
         self.assertEqual(transaction.gas.limit, 21000)
@@ -41,7 +44,10 @@ class TestTransaction(unittest.TestCase):
                 "amount": 100
             },
             "nonce": 1,
-            "chain_id": 1,
+            "chain_id": {
+                "chain_id": 1,
+                "version": 1,
+            },
             "gas": {
                 "tip": 10,
                 "max_fee": 50,
@@ -61,7 +67,8 @@ class TestTransaction(unittest.TestCase):
         self.assertEqual(transaction.payload.recipient, "recipient_address")
         self.assertEqual(transaction.payload.amount, 100)
         self.assertEqual(transaction.nonce, 1)
-        self.assertEqual(transaction.chain_id, 1)
+        self.assertEqual(transaction.chain_id.chain_id, 1)
+        self.assertEqual(transaction.chain_id.version, 1)
         self.assertEqual(transaction.gas.tip, 10)
         self.assertEqual(transaction.gas.max_fee, 50)
         self.assertEqual(transaction.gas.limit, 21000)
@@ -72,6 +79,7 @@ class TestTransaction(unittest.TestCase):
 
     def test_to_dict(self):
         payload = {"recipient": "recipient_address", "amount": 100}
+        chain_id = {"chain_id": 1, "version": 1}
         gas = {"tip": 10, "max_fee": 50, "limit": 21000}
         signature = {"type": "type", "v": 27, "r": "r_value", "s": "s_value", "public_key": "public_key"}
         transaction = Transaction(
@@ -79,7 +87,7 @@ class TestTransaction(unittest.TestCase):
             sender="sender_address",
             payload=payload,
             nonce=1,
-            chain_id=1,
+            chain_id=chain_id,
             gas=gas,
             signature=signature
         )
@@ -92,7 +100,10 @@ class TestTransaction(unittest.TestCase):
                 "amount": 100
             },
             "nonce": 1,
-            "chain_id": 1,
+            "chain_id": {
+                "chain_id": 1,
+                "version": 1,
+            },
             "gas": {
                 "tip": 10,
                 "max_fee": 50,
@@ -107,6 +118,7 @@ class TestTransaction(unittest.TestCase):
             }
         }
         self.assertEqual(transaction_dict, expected_dict)
+
 
 if __name__ == '__main__':
     unittest.main()

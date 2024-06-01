@@ -1,14 +1,17 @@
 import unittest
+from unittest.mock import Mock
+
 from haslo_blockchain.util.genesis import Genesis
 from haslo_blockchain.blockchain import Block, Blockchain
 from haslo_blockchain.security.hashing import Hashing
+
 
 class TestGenesis(unittest.TestCase):
     def test_genesis_initialization(self):
         genesis = Genesis(difficulty=1)
         self.assertEqual(genesis.difficulty, 1)
 
-    def test_create_block(self):
+    def test_create_empty_block(self):
         genesis = Genesis(difficulty=1)
         block = genesis.create_block(0, [], '0', 0)
         self.assertIsInstance(block, Block)
@@ -16,6 +19,19 @@ class TestGenesis(unittest.TestCase):
         self.assertEqual(block.transactions, [])
         self.assertEqual(block.previous_hash, '0')
         self.assertEqual(block.proof, 0)
+        self.assertEqual(block.difficulty, 1)
+        self.assertIsNotNone(block.current_hash)
+
+    def test_create_non_empty_block(self):
+        genesis = Genesis(difficulty=1)
+        transaction = Mock()
+        transaction.to_dict = Mock(return_value={'transaction': 'dict'})
+        block = genesis.create_block(3, [transaction], '0123', 123)
+        self.assertIsInstance(block, Block)
+        self.assertEqual(block.index, 3)
+        self.assertEqual(block.transactions, [transaction])
+        self.assertEqual(block.previous_hash, '0123')
+        self.assertEqual(block.proof, 123)
         self.assertEqual(block.difficulty, 1)
         self.assertIsNotNone(block.current_hash)
 
@@ -41,6 +57,7 @@ class TestGenesis(unittest.TestCase):
         self.assertEqual(blockchain.chain[0].proof, 0)
         self.assertEqual(blockchain.chain[0].difficulty, 1)
         self.assertIsNotNone(blockchain.chain[0].current_hash)
+
 
 if __name__ == '__main__':
     unittest.main()

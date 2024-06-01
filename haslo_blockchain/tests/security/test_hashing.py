@@ -1,5 +1,6 @@
 import unittest
-from haslo_blockchain.security.hashing import Hashing  # Importing the correct class
+from haslo_blockchain.security.hashing import Hashing
+
 
 class TestHashing(unittest.TestCase):
     def test_compute_block_hash(self):
@@ -19,6 +20,7 @@ class TestHashing(unittest.TestCase):
         block_hash = Hashing.compute_block_hash(block)
         self.assertIsNotNone(block_hash)
         self.assertEqual(len(block_hash), 64)  # SHA-256 hash length is 64 characters
+
 
 if __name__ == '__main__':
     unittest.main()
